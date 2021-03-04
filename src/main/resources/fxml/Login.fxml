@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXPasswordField?>
+<?import com.jfoenix.controls.JFXTextField?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+<?import javafx.scene.web.WebView?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.RegisterController">
+    <top>
+        <AnchorPane prefHeight="612.0" prefWidth="900.0" BorderPane.alignment="CENTER">
+            <children>
+                <Pane layoutX="460.0" prefHeight="725.0" prefWidth="440.0" styleClass="loginRightVBox" stylesheets="@../res/css/application.css">
+                    <children>
+                        <Label layoutX="59.0" layoutY="183.0" text="Login into an existing account" textFill="WHITE">
+                            <font>
+                                <Font name="Leelawadee UI Semilight" size="25.0" />
+                            </font>
+                        </Label>
+                        <Label layoutX="55.0" layoutY="265.0" text="Email address" textFill="WHITE">
+                            <font>
+                                <Font name="Leelawadee UI" size="16.0" />
+                            </font>
+                        </Label>
+                        <JFXTextField fx:id="emailInput" focusColor="WHITE" layoutX="55.0" layoutY="292.0" prefHeight="33.0" prefWidth="328.0" styleClass="jfxTextField" stylesheets="@../res/css/application.css" unFocusColor="WHITE">
+                            <font>
+                                <Font size="15.0" />
+                            </font>
+                        </JFXTextField>
+                        <Label layoutX="57.0" layoutY="349.0" text="Password" textFill="WHITE">
+                            <font>
+                                <Font name="Leelawadee UI" size="16.0" />
+                            </font>
+                        </Label>
+                        <JFXPasswordField fx:id="passwordInput" focusColor="WHITE" layoutX="57.0" layoutY="376.0" prefHeight="33.0" prefWidth="328.0" styleClass="jfxTextField" stylesheets="@../res/css/application.css" unFocusColor="WHITE">
+                            <font>
+                                <Font size="15.0" />
+                            </font>
+                        </JFXPasswordField>
+                        <Label layoutX="79.0" layoutY="510.0" textFill="WHITE">
+                            <font>
+                                <Font name="Leelawadee UI" size="12.0" />
+                            </font>
+                        </Label>
+                        <Label layoutX="324.0" layoutY="510.0" textFill="WHITE">
+                            <font>
+                                <Font name="Leelawadee UI" size="13.0" />
+                            </font>
+                        </Label>
+                        <Label layoutX="97.0" layoutY="662.0" text="Don't have an account? Register" textFill="WHITE">
+                            <font>
+                                <Font name="Leelawadee UI" size="14.0" />
+                            </font>
+                        </Label>
+                        <JFXButton fx:id="logInButton" layoutX="288.0" layoutY="657.0" text="here" textFill="#109e92">
+                            <font>
+                                <Font size="14.0" />
+                            </font>
+                        </JFXButton>
+                        <JFXButton fx:id="signUpButton" layoutX="107.0" layoutY="504.0" prefHeight="47.0" prefWidth="227.0" styleClass="jfxButton" stylesheets="@../res/css/application.css" text="Sign in " textFill="#33364d">
+                            <font>
+                                <Font name="Leelawadee UI Bold" size="18.0" />
+                            </font>
+                        </JFXButton>
+                  <Text fill="WHITE" layoutX="107.0" layoutY="112.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Sign in" textAlignment="CENTER" wrappingWidth="228.13671875">
+                     <font>
+                        <Font name="Roboto Light" size="62.0" />
+                     </font>
+                  </Text>
+                  <Text fill="WHITE" layoutX="121.0" layoutY="434.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Forgot password? Click " wrappingWidth="149.177734375">
+                     <font>
+                        <Font name="Leelawadee UI" size="14.0" />
+                     </font>
+                  </Text>
+                  <JFXButton layoutX="253.0" layoutY="413.0" prefHeight="32.0" prefWidth="57.0" text="here" textAlignment="RIGHT" textFill="#109e92">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </JFXButton>
+                    </children>
+                </Pane>
+                <Pane layoutX="-1.0" layoutY="-1.0" prefHeight="726.0" prefWidth="461.0" styleClass="loginLeftVBox" stylesheets="@../res/css/application.css">
+                    <children>
+                        <ImageView fitHeight="194.0" fitWidth="202.0" layoutX="134.0" layoutY="7.0" nodeOrientation="INHERIT" pickOnBounds="true" preserveRatio="true" styleClass="loginLogo">
+                            <image>
+                                <Image url="@../res/logo/logo.png" />
+                            </image>
+                        </ImageView>
+                        <Line endX="253.0" endY="259.0" layoutX="162.0" layoutY="247.0" startX="-110.0" startY="7.0" />
+                        <Line endX="256.70709228515625" endY="-35.70709228515625" layoutX="159.0" layoutY="289.0" startX="-122.0" startY="217.0" />
+                        <Text layoutX="164.0" layoutY="348.0" strokeType="OUTSIDE" strokeWidth="0.0" text="WEBVIEW" textAlignment="CENTER" wrappingWidth="133.083984375" />
+                        <WebView fx:id="imageSlideShow" layoutX="38.0" layoutY="207.0" prefHeight="317.0" prefWidth="381.0" />
+                    </children>
+                </Pane>
+            </children>
+        </AnchorPane>
+    </top>
+</BorderPane>
