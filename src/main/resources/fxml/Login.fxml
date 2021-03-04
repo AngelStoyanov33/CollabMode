@@ -14,11 +14,11 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.web.WebView?>
 
-<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.RegisterController">
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nullpointerexception.collabmode.controller.LoginController">
     <top>
         <AnchorPane prefHeight="612.0" prefWidth="900.0" BorderPane.alignment="CENTER">
             <children>
-                <Pane layoutX="460.0" prefHeight="725.0" prefWidth="440.0" styleClass="loginRightVBox" stylesheets="@../res/css/application.css">
+                <Pane layoutX="460.0" prefHeight="725.0" prefWidth="440.0" styleClass="loginRightVBox" stylesheets="@../css/application.css">
                     <children>
                         <Label layoutX="59.0" layoutY="183.0" text="Login into an existing account" textFill="WHITE">
                             <font>
@@ -30,7 +30,7 @@
                                 <Font name="Leelawadee UI" size="16.0" />
                             </font>
                         </Label>
-                        <JFXTextField fx:id="emailInput" focusColor="WHITE" layoutX="55.0" layoutY="292.0" prefHeight="33.0" prefWidth="328.0" styleClass="jfxTextField" stylesheets="@../res/css/application.css" unFocusColor="WHITE">
+                        <JFXTextField fx:id="emailInput" focusColor="WHITE" layoutX="55.0" layoutY="292.0" prefHeight="33.0" prefWidth="328.0" styleClass="jfxTextField" stylesheets="@../css/application.css" unFocusColor="WHITE">
                             <font>
                                 <Font size="15.0" />
                             </font>
@@ -40,7 +40,7 @@
                                 <Font name="Leelawadee UI" size="16.0" />
                             </font>
                         </Label>
-                        <JFXPasswordField fx:id="passwordInput" focusColor="WHITE" layoutX="57.0" layoutY="376.0" prefHeight="33.0" prefWidth="328.0" styleClass="jfxTextField" stylesheets="@../res/css/application.css" unFocusColor="WHITE">
+                        <JFXPasswordField fx:id="passwordInput" focusColor="WHITE" layoutX="57.0" layoutY="376.0" prefHeight="33.0" prefWidth="328.0" styleClass="jfxTextField" stylesheets="@../css/application.css" unFocusColor="WHITE">
                             <font>
                                 <Font size="15.0" />
                             </font>
@@ -65,7 +65,7 @@
                                 <Font size="14.0" />
                             </font>
                         </JFXButton>
-                        <JFXButton fx:id="signUpButton" layoutX="107.0" layoutY="504.0" prefHeight="47.0" prefWidth="227.0" styleClass="jfxButton" stylesheets="@../res/css/application.css" text="Sign in " textFill="#33364d">
+                        <JFXButton fx:id="signUpButton" layoutX="107.0" layoutY="504.0" prefHeight="47.0" prefWidth="227.0" styleClass="jfxButton" stylesheets="@../css/application.css" text="Sign in " textFill="#33364d">
                             <font>
                                 <Font name="Leelawadee UI Bold" size="18.0" />
                             </font>
@@ -87,11 +87,11 @@
                   </JFXButton>
                     </children>
                 </Pane>
-                <Pane layoutX="-1.0" layoutY="-1.0" prefHeight="726.0" prefWidth="461.0" styleClass="loginLeftVBox" stylesheets="@../res/css/application.css">
+                <Pane layoutX="-1.0" layoutY="-1.0" prefHeight="726.0" prefWidth="461.0" styleClass="loginLeftVBox" stylesheets="@../css/application.css">
                     <children>
                         <ImageView fitHeight="194.0" fitWidth="202.0" layoutX="134.0" layoutY="7.0" nodeOrientation="INHERIT" pickOnBounds="true" preserveRatio="true" styleClass="loginLogo">
                             <image>
-                                <Image url="@../res/logo/logo.png" />
+                                <Image url="@../assets/logo.png" />
                             </image>
                         </ImageView>
                         <Line endX="253.0" endY="259.0" layoutX="162.0" layoutY="247.0" startX="-110.0" startY="7.0" />
