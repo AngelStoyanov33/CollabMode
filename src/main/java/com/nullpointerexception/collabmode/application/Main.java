@@ -13,6 +13,7 @@ public class Main extends Application {
 
     private static HostServicesDelegate hostServices;
 
+
     @Override
     public void start(Stage primaryStage) throws Exception{
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/register.fxml"));

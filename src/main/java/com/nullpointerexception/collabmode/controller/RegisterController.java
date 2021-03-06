@@ -4,6 +4,7 @@ import com.jfoenix.controls.JFXCheckBox;
 import com.jfoenix.controls.JFXPasswordField;
 import com.jfoenix.controls.JFXTextField;
 import com.nullpointerexception.collabmode.application.Main;
+import com.nullpointerexception.collabmode.service.HTTPRequestManager;
 import com.nullpointerexception.collabmode.util.EmailUtils;
 import com.nullpointerexception.collabmode.util.PasswordUtils;
 import com.sun.deploy.uitoolkit.impl.fx.HostServicesFactory;
@@ -19,7 +20,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import org.json.JSONObject;
 
+import java.io.IOException;
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +48,7 @@ public class RegisterController {
     @FXML public void initialize(){
         // Load the WebView for the image slideshow
         WebEngine webEngine = imageSlideShow.getEngine();
-        webEngine.load("http://localhost:8080/collabmode/portal/"); //TODO: Change when the Spring Boot app is made
+        webEngine.load("http://192.168.0.107:8080/imageSwitcher"); //TODO: Change when the Spring Boot app is made
 
         tosHyperlink.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -109,6 +113,7 @@ public class RegisterController {
                 if(newsletterAgree.isSelected()){
                     newsletterStatus = true;
                 }
+
             }
         });
 
