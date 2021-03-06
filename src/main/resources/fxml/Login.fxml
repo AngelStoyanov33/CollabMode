@@ -30,7 +30,7 @@
                                 <Font name="Leelawadee UI" size="16.0" />
                             </font>
                         </Label>
-                        <JFXTextField fx:id="emailInput" focusColor="WHITE" layoutX="55.0" layoutY="292.0" prefHeight="33.0" prefWidth="328.0" styleClass="jfxTextField" stylesheets="@../css/application.css" unFocusColor="WHITE">
+                        <JFXTextField fx:id="emailAddressInput" focusColor="WHITE" layoutX="55.0" layoutY="292.0" prefHeight="33.0" prefWidth="328.0" styleClass="jfxTextField" stylesheets="@../css/application.css" unFocusColor="WHITE">
                             <font>
                                 <Font size="15.0" />
                             </font>
@@ -40,7 +40,7 @@
                                 <Font name="Leelawadee UI" size="16.0" />
                             </font>
                         </Label>
-                        <JFXPasswordField fx:id="passwordInput" focusColor="WHITE" layoutX="57.0" layoutY="376.0" prefHeight="33.0" prefWidth="328.0" styleClass="jfxTextField" stylesheets="@../css/application.css" unFocusColor="WHITE">
+                        <JFXPasswordField fx:id="passwordPassField" focusColor="WHITE" layoutX="57.0" layoutY="376.0" prefHeight="33.0" prefWidth="328.0" styleClass="jfxTextField" stylesheets="@../css/application.css" unFocusColor="WHITE">
                             <font>
                                 <Font size="15.0" />
                             </font>
@@ -60,12 +60,12 @@
                                 <Font name="Leelawadee UI" size="14.0" />
                             </font>
                         </Label>
-                        <JFXButton fx:id="logInButton" layoutX="288.0" layoutY="657.0" text="here" textFill="#109e92">
+                        <JFXButton fx:id="switchToRegisterButton" layoutX="288.0" layoutY="657.0" text="here" textFill="#109e92">
                             <font>
                                 <Font size="14.0" />
                             </font>
                         </JFXButton>
-                        <JFXButton fx:id="signUpButton" layoutX="107.0" layoutY="504.0" prefHeight="47.0" prefWidth="227.0" styleClass="jfxButton" stylesheets="@../css/application.css" text="Sign in " textFill="#33364d">
+                        <JFXButton fx:id="signInButton" layoutX="107.0" layoutY="504.0" prefHeight="47.0" prefWidth="227.0" styleClass="jfxButton" stylesheets="@../css/application.css" text="Sign in " textFill="#33364d">
                             <font>
                                 <Font name="Leelawadee UI Bold" size="18.0" />
                             </font>
@@ -80,7 +80,7 @@
                         <Font name="Leelawadee UI" size="14.0" />
                      </font>
                   </Text>
-                  <JFXButton layoutX="253.0" layoutY="413.0" prefHeight="32.0" prefWidth="57.0" text="here" textAlignment="RIGHT" textFill="#109e92">
+                  <JFXButton fx:id="forgotPasswordButton" layoutX="253.0" layoutY="413.0" prefHeight="32.0" prefWidth="57.0" text="here" textAlignment="RIGHT" textFill="#109e92">
                      <font>
                         <Font size="14.0" />
                      </font>
@@ -97,7 +97,7 @@
                         <Line endX="253.0" endY="259.0" layoutX="162.0" layoutY="247.0" startX="-110.0" startY="7.0" />
                         <Line endX="256.70709228515625" endY="-35.70709228515625" layoutX="159.0" layoutY="289.0" startX="-122.0" startY="217.0" />
                         <Text layoutX="164.0" layoutY="348.0" strokeType="OUTSIDE" strokeWidth="0.0" text="WEBVIEW" textAlignment="CENTER" wrappingWidth="133.083984375" />
-                        <WebView fx:id="imageSlideShow" layoutX="38.0" layoutY="207.0" prefHeight="317.0" prefWidth="381.0" />
+                        <WebView id="imageSlideShow" fx:id="imageSlideShow" layoutX="38.0" layoutY="207.0" prefHeight="317.0" prefWidth="381.0" />
                     </children>
                 </Pane>
             </children>
