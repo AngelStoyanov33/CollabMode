@@ -5,6 +5,7 @@ import com.sun.javafx.application.HostServicesDelegate;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
@@ -21,6 +22,7 @@ public class Main extends Application {
         primaryStage.setScene(scene);
         primaryStage.setTitle("CollabMode v0.0.1-SNAPSHOT");
         primaryStage.show();
+        primaryStage.getIcons().add(new Image("/assets/logo_wt.png"));
 
         hostServices = HostServicesFactory.getInstance(this);
     }
