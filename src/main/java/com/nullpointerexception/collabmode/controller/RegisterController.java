@@ -113,6 +113,7 @@ public class RegisterController {
                 if(newsletterAgree.isSelected()){
                     newsletterStatus = true;
                 }
+
                 //
                 JSONObject json = new JSONObject();
                 json.put("fullName", fullName);
@@ -121,7 +122,9 @@ public class RegisterController {
                 json.put("newsletterStatus", newsletterStatus);
                 HTTPRequestManager httpRequestManager = new HTTPRequestManager();
                 try {
-                    httpRequestManager.sendJSONRequest("http://192.168.0.107:8080/register",  json.toString());
+                    String response = httpRequestManager.sendJSONRequest("http://192.168.0.101:8080/register",  json.toString());
+                    JSONObject responseToJson = new JSONObject(response);
+                    System.out.println(responseToJson.get("token"));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
