@@ -113,6 +113,19 @@ public class RegisterController {
                 if(newsletterAgree.isSelected()){
                     newsletterStatus = true;
                 }
+                //
+                JSONObject json = new JSONObject();
+                json.put("fullName", fullName);
+                json.put("email", email);
+                json.put("password", password);
+                json.put("newsletterStatus", newsletterStatus);
+                HTTPRequestManager httpRequestManager = new HTTPRequestManager();
+                try {
+                    httpRequestManager.sendJSONRequest("http://192.168.0.107:8080/register",  json.toString());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
 
             }
         });
