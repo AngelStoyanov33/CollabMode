@@ -14,7 +14,7 @@
 <?import javafx.scene.text.Text?>
 <?import javafx.scene.web.WebView?>
 
-<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nullpointerexception.collabmode.controller.LoginController">
+<BorderPane xmlns="http://javafx.com/javafx/8.0.172" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nullpointerexception.collabmode.controller.LoginController">
     <top>
         <AnchorPane prefHeight="612.0" prefWidth="900.0" BorderPane.alignment="CENTER">
             <children>

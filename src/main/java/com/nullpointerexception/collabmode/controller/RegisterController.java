@@ -114,7 +114,7 @@ public class RegisterController {
                     newsletterStatus = true;
                 }
 
-                //
+                password = PasswordUtils.hash(password);
                 JSONObject json = new JSONObject();
                 json.put("fullName", fullName);
                 json.put("email", email);

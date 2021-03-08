@@ -5,6 +5,7 @@ import com.jfoenix.controls.JFXPasswordField;
 import com.jfoenix.controls.JFXTextField;
 import com.nullpointerexception.collabmode.service.HTTPRequestManager;
 import com.nullpointerexception.collabmode.util.EmailUtils;
+import com.nullpointerexception.collabmode.util.PasswordUtils;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -46,6 +47,7 @@ public class LoginController {
                     return;
                 }
 
+                password = PasswordUtils.hash(password);
                 JSONObject json = new JSONObject();
                 json.put("emailAddress", emailAddress);
                 json.put("password", password);

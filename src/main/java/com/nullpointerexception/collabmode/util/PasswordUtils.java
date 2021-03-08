@@ -1,5 +1,7 @@
 package com.nullpointerexception.collabmode.util;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -38,5 +40,9 @@ public class PasswordUtils {
 
         return flag;
 
+    }
+
+    public static String hash(String password){
+        return DigestUtils.sha256Hex(password);
     }
 }
