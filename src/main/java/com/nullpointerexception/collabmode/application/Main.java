@@ -1,5 +1,6 @@
 package com.nullpointerexception.collabmode.application;
 
+import com.nullpointerexception.collabmode.controller.DashboardController;
 import com.nullpointerexception.collabmode.controller.RegisterController;
 import com.sun.deploy.uitoolkit.impl.fx.HostServicesFactory;
 import com.sun.javafx.application.HostServicesDelegate;
@@ -10,7 +11,6 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Region;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -77,12 +77,14 @@ public class Main extends Application {
         currentStage = registerStage;
     }
 
-    public static void openDashboardStage() throws IOException {
+    public static void openDashboardStage(String token) throws IOException {
         Stage dashboardStage = new Stage();
+        DashboardController.setToken(token);
         FXMLLoader loader = new FXMLLoader(Main.class.getResource("/fxml/dashboard.fxml"));
         BorderPane root = (BorderPane) loader.load();
         Scene scene = new Scene(root,900,725);
         scene.getStylesheets().add(String.valueOf(Main.class.getClassLoader().getResource("css/application.css")));
+        DashboardController dashboardController = (DashboardController) loader.getController();
         dashboardStage.setScene(scene);
         dashboardStage.setTitle("CollabMode v0.0.1-SNAPSHOT");
         dashboardStage.show();

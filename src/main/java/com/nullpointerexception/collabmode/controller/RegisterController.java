@@ -7,23 +7,20 @@ import com.nullpointerexception.collabmode.application.Main;
 import com.nullpointerexception.collabmode.service.HTTPRequestManager;
 import com.nullpointerexception.collabmode.util.EmailUtils;
 import com.nullpointerexception.collabmode.util.PasswordUtils;
-import com.sun.deploy.uitoolkit.impl.fx.HostServicesFactory;
-import com.sun.javafx.application.HostServicesDelegate;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Hyperlink;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,19 +45,19 @@ public class RegisterController {
     @FXML public void initialize(){
         // Load the WebView for the image slideshow
         WebEngine webEngine = imageSlideShow.getEngine();
-        webEngine.load("http://192.168.0.107:8080/imageSwitcher"); //TODO: Change when the Spring Boot app is made
+        webEngine.load(HTTPRequestManager.SERVER_LOCATION + "/imageSwitcher"); //TODO: Change when the Spring Boot app is made
 
         tosHyperlink.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                Main.getHostService().showDocument("http://localhost:8080/collabmode/tos/"); //TODO: Change when the Spring Boot app is made
+                Main.getHostService().showDocument(HTTPRequestManager.SERVER_LOCATION +"/tos"); //TODO: Change when the Spring Boot app is made
             }
         });
 
         newsletterHyperlink.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                Main.getHostService().showDocument("http://localhost:8080/collabmode/newsletter/"); //TODO: Change when the Spring Boot app is made
+                Main.getHostService().showDocument(HTTPRequestManager.SERVER_LOCATION +"/newsletter"); //TODO: Change when the Spring Boot app is made
             }
         });
 
@@ -122,14 +119,21 @@ public class RegisterController {
                 json.put("newsletterStatus", newsletterStatus);
                 HTTPRequestManager httpRequestManager = new HTTPRequestManager();
                 try {
-                    String response = httpRequestManager.sendJSONRequest("http://192.168.0.101:8080/register",  json.toString());
+                    String response = httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/register",  json.toString());
                     JSONObject responseToJson = new JSONObject(response);
-                    System.out.println(responseToJson.get("token"));
+                    if(!responseToJson.get("status").toString().equals("ok")){
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Registration error");
+                        alert.setContentText(responseToJson.get("errorMessage").toString());
+                        alert.showAndWait();
+                        return;
+                    }else{
+                        Main.openDashboardStage(responseToJson.get("token").toString());
+                    }
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
-
             }
         });
 

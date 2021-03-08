@@ -9,6 +9,9 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 public class HTTPRequestManager {
+
+    public static final String SERVER_LOCATION = "http://192.168.0.101:8080";
+
     public String sendJSONRequest(final String URL, String jsonInputString) throws IOException {
         HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(URL).openConnection();
         httpURLConnection.setRequestMethod("POST");

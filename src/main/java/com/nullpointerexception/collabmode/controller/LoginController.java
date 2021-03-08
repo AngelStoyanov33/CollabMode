@@ -3,6 +3,7 @@ package com.nullpointerexception.collabmode.controller;
 import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXPasswordField;
 import com.jfoenix.controls.JFXTextField;
+import com.nullpointerexception.collabmode.application.Main;
 import com.nullpointerexception.collabmode.service.HTTPRequestManager;
 import com.nullpointerexception.collabmode.util.EmailUtils;
 import com.nullpointerexception.collabmode.util.PasswordUtils;
@@ -29,7 +30,7 @@ public class LoginController {
     @FXML public void initialize(){
         // Load the WebView for the image slideshow
         WebEngine webEngine = imageSlideShow.getEngine();
-        webEngine.load("http://localhost:8080/collabmode/portal/"); //TODO: Change when the Spring Boot app is made
+        webEngine.load(HTTPRequestManager.SERVER_LOCATION + "/imageSwitcher"); //TODO: Change when the Spring Boot app is made
 
         signInButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -53,7 +54,18 @@ public class LoginController {
                 json.put("password", password);
                 HTTPRequestManager httpRequestManager = new HTTPRequestManager();
                 try {
-                    httpRequestManager.sendJSONRequest("http://192.168.0.107:8080/register",  json.toString());
+                    String response = httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/login",  json.toString());
+                    JSONObject responseToJson = new JSONObject(response);
+                    if(!responseToJson.get("status").toString().equals("ok")){
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Login error");
+                        alert.setContentText(responseToJson.get("errorMessage").toString());
+                        alert.showAndWait();
+                        return;
+                    }else{
+                        Main.openDashboardStage(responseToJson.get("token").toString());
+                    }
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
