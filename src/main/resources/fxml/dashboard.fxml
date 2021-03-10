@@ -1,21 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.jfoenix.controls.JFXTextArea?>
+<?import com.jfoenix.controls.JFXTreeView?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.text.Font?>
-<?import javafx.scene.text.Text?>
-
 
 <BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nullpointerexception.collabmode.controller.DashboardController">
    <top>
-      <AnchorPane prefHeight="268.0" prefWidth="983.0" BorderPane.alignment="CENTER">
+      <AnchorPane prefHeight="720.0" prefWidth="900.0" BorderPane.alignment="CENTER">
          <children>
-            <Text fx:id = "testText" layoutX="381.0" layoutY="78.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Text" wrappingWidth="168.13671875">
-               <font>
-                  <Font size="18.0" />
-               </font>
-            </Text>
-         </children>
-      </AnchorPane>
+            <MenuBar fx:id="menuBar" layoutY="2.0" prefHeight="25.0" prefWidth="900.0">
+              <menus>
+                <Menu mnemonicParsing="false" text="File">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="Close" />
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Edit">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="Delete" />
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Help">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="About" />
+                  </items>
+                </Menu>
+                  <Menu mnemonicParsing="false" text="Refresh">
+                    <items>
+                      <MenuItem mnemonicParsing="false" text="Action 1" />
+                    </items>
+                  </Menu>
+                  <Menu fx:id = "collaborateMenu" mnemonicParsing="false" text="Collaborate">
+                    <items>
+                        <MenuItem fx:id = "addTeam" mnemonicParsing="false" text="Create team">
+                        </MenuItem>
+                        <MenuItem fx:id="join" mnemonicParsing="false" text="Join team" />
+                        <Menu mnemonicParsing="false" text="My team">
+                          <items>
+                              <MenuItem fx:id="invite" mnemonicParsing="false" text="Invite others" />
+                          </items>
+                        </Menu>
+                        <MenuItem mnemonicParsing="false" text="Create project" />
+                    </items>
+                  </Menu>
+              </menus>
+            </MenuBar>
+            <JFXTreeView fx:id="treeView" layoutY="27.0" prefHeight="693.0" prefWidth="248.0" />
+            <JFXTextArea fx:id="textArea" layoutX="248.0" layoutY="27.0" prefHeight="693.0" prefWidth="652.0" />
+         </children></AnchorPane>
    </top>
 </BorderPane>
