@@ -30,7 +30,7 @@ public class LoginController {
     @FXML public void initialize(){
         // Load the WebView for the image slideshow
         WebEngine webEngine = imageSlideShow.getEngine();
-        webEngine.load(HTTPRequestManager.SERVER_LOCATION + "/imageSwitcher"); //TODO: Change when the Spring Boot app is made
+        webEngine.load(HTTPRequestManager.SERVER_LOCATION + "/imageSwitcher");
 
         signInButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
