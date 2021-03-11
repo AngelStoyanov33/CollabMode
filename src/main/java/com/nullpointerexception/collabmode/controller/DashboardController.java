@@ -77,6 +77,14 @@ public class DashboardController {
                     json.put("teamName", input.getText());
                     try {
                         String response =  httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/createTeam", json.toString());
+                        json = new JSONObject(response);
+                        if(!json.get("status").toString().equals("ok")){
+                            Alert alert = new Alert(Alert.AlertType.ERROR);
+                            alert.setTitle("Add team error");
+                            alert.setContentText(json.get("errorMessage").toString());
+                            alert.showAndWait();
+                            return;
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -99,7 +107,13 @@ public class DashboardController {
                 try {
                     String response =  httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/sendInvite", json.toString());
                     json = new JSONObject(response);
-                    System.out.println(json.get("teamCode").toString());
+                    if(!json.get("status").toString().equals("ok")){
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Invite others error");
+                        alert.setContentText(json.get("errorMessage").toString());
+                        alert.showAndWait();
+                        return;
+                    }
                     input.setText(json.get("teamCode").toString());
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -123,6 +137,14 @@ public class DashboardController {
                 json.put("teamCode", input.getText());
                 try {
                     String response =  httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/joinTeam", json.toString());
+                    json = new JSONObject(response);
+                    if(!json.get("status").toString().equals("ok")){
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Join team error");
+                        alert.setContentText(json.get("errorMessage").toString());
+                        alert.showAndWait();
+                        return;
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -138,6 +160,12 @@ public class DashboardController {
         json = new JSONObject(response);
         if(json.get("status").toString().equals("ok")) {
             currentUser = new User(Integer.parseInt(json.get("userID").toString()), json.get("userFullName").toString(), json.get("userEmail").toString());
+        }else{
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Еrror");
+            alert.setContentText(json.get("errorMessage").toString());
+            alert.showAndWait();
+            return;
         }
 
     }
