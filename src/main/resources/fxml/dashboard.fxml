@@ -2,8 +2,6 @@
 
 <?import com.jfoenix.controls.JFXTextArea?>
 <?import com.jfoenix.controls.JFXTreeView?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
@@ -36,12 +34,12 @@
                       <MenuItem mnemonicParsing="false" text="Action 1" />
                     </items>
                   </Menu>
-                  <Menu fx:id = "collaborateMenu" mnemonicParsing="false" text="Collaborate">
+                  <Menu fx:id="collaborateMenu" mnemonicParsing="false" text="Collaborate">
                     <items>
-                        <MenuItem fx:id = "addTeam" mnemonicParsing="false" text="Create team">
+                        <MenuItem fx:id="addTeam" mnemonicParsing="false" text="Create team">
                         </MenuItem>
                         <MenuItem fx:id="join" mnemonicParsing="false" text="Join team" />
-                        <Menu mnemonicParsing="false" text="My team">
+                        <Menu fx:id="myTeamMenu" mnemonicParsing="false" text="My team">
                           <items>
                               <MenuItem fx:id="invite" mnemonicParsing="false" text="Invite others" />
                           </items>
