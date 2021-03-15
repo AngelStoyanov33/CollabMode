@@ -69,9 +69,10 @@ public class DashboardController {
             MenuItem transferOwnerItem = new MenuItem();
             transferOwnerItem.setText("Transfer ownership");
             transferOwnerItem.setOnAction(event -> {
+                ArrayList<User> users = null;
                 List<String> choices = new ArrayList<>();
                 try {
-                    ArrayList<User> users = fetchUsersByTeamID(currentUser.getTeamID());
+                    users = fetchUsersByTeamID(currentUser.getTeamID());
                     if(users == null){
                         Alert alert = new Alert(Alert.AlertType.ERROR);
                         alert.setTitle("Transfer ownership error");
@@ -95,7 +96,31 @@ public class DashboardController {
 
                 Optional<String> result = dialog.showAndWait();
                 if (result.isPresent()){
-                    System.out.println("Your choice: " + result.get()); //TODO: Send transfer ownership request
+                    try {
+                        System.out.println("Your choice: " + result.get());
+                        HTTPRequestManager httpRequestManager = new HTTPRequestManager();
+                        JSONObject json = new JSONObject();
+                        int newOwnerID = 0;
+                        json.put("token", token);
+                        for(User user : users){
+                            if(user.getFullName().equals(result.get())) {
+                                newOwnerID = user.getId();
+                                break;
+                            }
+                        }
+                        json.put("newOwnerID", newOwnerID);
+                        String response = httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/transferTeamOwnerShip", json.toString());
+                        json = new JSONObject(response);
+                        if (!json.get("status").toString().equals("ok")) {
+                            Alert alert = new Alert(Alert.AlertType.ERROR);
+                            alert.setTitle("Transfer ownership error");
+                            alert.setContentText(json.get("errorMessage").toString());
+                            alert.showAndWait();
+                            return;
+                        }
+                    }catch (IOException e){
+                        e.printStackTrace();
+                    }
                 }
             });
             myTeamMenu.getItems().add(transferOwnerItem);
@@ -115,7 +140,13 @@ public class DashboardController {
             if (input.getText() != null || input.getText().length() == 0) {
                 String path = getPathOfItem();
                 System.out.println(path + "/" + input.getText());
-                ftpManager.addNewDirectory(path + "/" + input.getText()); //TODO: Check if error
+                if(!ftpManager.addNewDirectory(path + "/" + input.getText())){
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Add directory error");
+                    alert.setContentText("Couldn't create the directory. Try again later.");
+                    alert.showAndWait();
+                    return;
+                }
             }
         });
 
