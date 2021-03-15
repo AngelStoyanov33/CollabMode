@@ -52,18 +52,8 @@ public class DashboardController {
         }
 
         ftpManager = new FTPManager("localhost", 21, "TestUser7", "");
-        FTPFile[] files = ftpManager.getFiles();
+        loadFTPTree();
 
-        TreeItem<String> item = new TreeItem<String>("Test");
-        treeView.setRoot(item);
-
-        for (FTPFile f : files) {
-            if (f.isDirectory()) {
-                item.getChildren().add(getNodesForDirectory(f));
-            } else {
-                item.getChildren().add(new TreeItem<String>(f.getName()));
-            }
-        }
 
         if(currentUser.getTeamID() != 0 && currentUser.isTeamOwner()) {
             MenuItem transferOwnerItem = new MenuItem();
@@ -127,11 +117,23 @@ public class DashboardController {
         }
 
 
-        MenuItem entry1 = new MenuItem("Add item"); //Currently not working
-        MenuItem entry2 = new MenuItem("Delete"); //Currently not working
-        MenuItem entry3 = new MenuItem("New folder");
+        MenuItem addItem = new MenuItem("Add item");  // FIXME: Currently not working
+        MenuItem deleteItem = new MenuItem("Delete");
+        MenuItem addNewDirectory = new MenuItem("New folder");
+        MenuItem renameItem = new MenuItem("Rename");
+        MenuItem refresh = new MenuItem("Refresh");
 
-        entry3.setOnAction(event -> {
+        refresh.setOnAction(event -> {
+            loadFTPTree();
+        });
+
+        deleteItem.setOnAction(event -> {
+            String path = getPathOfItem();
+            ftpManager.deleteFile(path);
+            loadFTPTree();
+        });
+
+        addNewDirectory.setOnAction(event -> {
             TextInputDialog textInputDialog = new TextInputDialog();
             textInputDialog.setTitle("Create a directory");
             textInputDialog.getDialogPane().setContentText("Directory name:");
@@ -140,34 +142,37 @@ public class DashboardController {
             if (input.getText() != null || input.getText().length() == 0) {
                 String path = getPathOfItem();
                 System.out.println(path + "/" + input.getText());
-                if(!ftpManager.addNewDirectory(path + "/" + input.getText())){
+                if (!ftpManager.addNewDirectory(path + "/" + input.getText())) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Add directory error");
                     alert.setContentText("Couldn't create the directory. Try again later.");
                     alert.showAndWait();
                     return;
                 }
+                loadFTPTree();
             }
         });
 
-        entry1.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                try {
-                    File myObj = new File("D:\\");
-                    if (myObj.createNewFile()) {
-                        System.out.println("File created: " + myObj.getName());
-                    } else {
-                        System.out.println("File already exists.");
-                    }
-                } catch (IOException e) {
-                    System.out.println("An error occurred.");
-                    e.printStackTrace();
-                }
+        renameItem.setOnAction(event -> {
+            TextInputDialog textInputDialog = new TextInputDialog();
+            textInputDialog.setTitle("Rename a directory");
+            textInputDialog.getDialogPane().setContentText("Directory name:");
+            Optional<String> result = textInputDialog.showAndWait();
+            TextField input = textInputDialog.getEditor();
+            if (input.getText() != null || input.getText().length() == 0) {
+                String path = getPathOfItem();
+                String newPath = path;
+                int index = newPath.lastIndexOf('/');
+                newPath = newPath.substring(0,index);
+                newPath += "/";
+                newPath += input.getText();
+
+                ftpManager.rename(path, newPath); //TODO: Check if error
             }
+            loadFTPTree();
         });
 
-        treeView.setContextMenu(new ContextMenu(entry1, entry2, entry3));
+        treeView.setContextMenu(new ContextMenu(addItem, deleteItem, addNewDirectory, renameItem));
 
         addTeam.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -357,4 +362,18 @@ public class DashboardController {
         return path;
     }
 
+    public void loadFTPTree(){
+        FTPFile[] files = ftpManager.getFiles();
+
+        TreeItem<String> item = new TreeItem<String>("Test");
+        treeView.setRoot(item);
+
+        for (FTPFile f : files) {
+            if (f.isDirectory()) {
+                item.getChildren().add(getNodesForDirectory(f));
+            } else {
+                item.getChildren().add(new TreeItem<String>(f.getName()));
+            }
+        }
+    }
 }

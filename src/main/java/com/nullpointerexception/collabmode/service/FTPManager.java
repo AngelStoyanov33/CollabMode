@@ -73,4 +73,28 @@ public class FTPManager {
         return false;
     }
 
+    //added
+    public boolean rename(String from, String to) {
+        boolean success = false;
+        if(ftpClient != null) {
+            try {
+                return success = ftpClient.rename(from, to);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+    public boolean deleteFile(String pathname){
+        boolean deleted;
+        if(ftpClient != null) {
+            try {
+                return deleted = ftpClient.deleteFile(pathname);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
 }
