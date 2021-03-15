@@ -32,6 +32,15 @@ public class LoginController {
         WebEngine webEngine = imageSlideShow.getEngine();
         webEngine.load(HTTPRequestManager.SERVER_LOCATION + "/imageSwitcher");
 
+        switchToRegisterButton.setOnAction(event -> {
+            try {
+                Main.openRegisterStage();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
+
         signInButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {

@@ -32,17 +32,17 @@ public class Main extends Application {
         primaryStage.getIcons().add(new Image("/assets/logo_wt.png"));
         currentStage = primaryStage;
         hostServices = HostServicesFactory.getInstance(this);
-        RegisterController registerController = loader.getController();
-        registerController.getSwitchToLogInButton().setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                try {
-                    openLoginStage();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+//        RegisterController registerController = loader.getController();
+//        registerController.getSwitchToLogInButton().setOnAction(new EventHandler<ActionEvent>() {
+//            @Override
+//            public void handle(ActionEvent event) {
+//                try {
+//                    openLoginStage();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
     }
 
     public static HostServicesDelegate getHostService() {

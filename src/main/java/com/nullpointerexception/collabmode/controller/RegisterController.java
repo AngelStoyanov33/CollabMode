@@ -47,6 +47,14 @@ public class RegisterController {
         WebEngine webEngine = imageSlideShow.getEngine();
         webEngine.load(HTTPRequestManager.SERVER_LOCATION + "/imageSwitcher");
 
+        switchToLogInButton.setOnAction(event -> {
+            try {
+                Main.openLoginStage();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
         tosHyperlink.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
