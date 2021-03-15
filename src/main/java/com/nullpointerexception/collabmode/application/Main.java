@@ -93,6 +93,10 @@ public class Main extends Application {
         currentStage = dashboardStage;
     }
 
+    public static Stage getCurrentStage() {
+        return currentStage;
+    }
+
     public static void main(String[] args) {
         launch(args);
     }
