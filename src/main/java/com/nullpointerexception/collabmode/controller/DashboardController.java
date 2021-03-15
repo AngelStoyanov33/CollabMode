@@ -1,5 +1,6 @@
 package com.nullpointerexception.collabmode.controller;
 
+
 import com.jfoenix.controls.JFXTextArea;
 import com.jfoenix.controls.JFXTreeView;
 import com.nullpointerexception.collabmode.application.Main;
@@ -13,12 +14,14 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.util.Duration;
-import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPFile;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class DashboardController {
@@ -28,21 +31,16 @@ public class DashboardController {
     private static User currentUser = null;
     private static FTPManager ftpManager;
 
-    @FXML
-    private JFXTreeView<String> treeView;
-    @FXML
-    private MenuBar menuBar;
-    @FXML
-    private JFXTextArea textArea;
+    @FXML private JFXTreeView<String> treeView;
+    @FXML private MenuBar menuBar;
+    @FXML private JFXTextArea textArea;
 
-    @FXML
-    private Menu collaborateMenu;
-    @FXML
-    private MenuItem addTeam;
-    @FXML
-    private MenuItem invite;
-    @FXML
-    private MenuItem join;
+    @FXML private Menu collaborateMenu;
+    @FXML private MenuItem addTeam;
+    @FXML private Menu myTeamMenu;
+
+    @FXML private MenuItem invite;
+    @FXML private MenuItem join;
 
     @FXML
     public void initialize(){
@@ -66,6 +64,43 @@ public class DashboardController {
                 item.getChildren().add(new TreeItem<String>(f.getName()));
             }
         }
+
+        if(currentUser.getTeamID() != 0 && currentUser.isTeamOwner()) {
+            MenuItem transferOwnerItem = new MenuItem();
+            transferOwnerItem.setText("Transfer ownership");
+            transferOwnerItem.setOnAction(event -> {
+                List<String> choices = new ArrayList<>();
+                try {
+                    ArrayList<User> users = fetchUsersByTeamID(currentUser.getTeamID());
+                    if(users == null){
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Transfer ownership error");
+                        alert.setContentText("You're not currently in team!");
+                        alert.showAndWait();
+                        return;
+                    }
+                    for(User user : users){
+                        if(user.getId() != currentUser.getId()) {
+                            choices.add(user.getFullName());
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                ChoiceDialog<String> dialog = new ChoiceDialog<>(choices.get(0), choices);
+                dialog.setTitle("Transfer the team ownership");
+                dialog.setHeaderText("Transfer the team ownership");
+                dialog.setContentText("Choose your new team leader:");
+
+                Optional<String> result = dialog.showAndWait();
+                if (result.isPresent()){
+                    System.out.println("Your choice: " + result.get()); //TODO: Send transfer ownership request
+                }
+            });
+            myTeamMenu.getItems().add(transferOwnerItem);
+        }
+
 
         MenuItem entry1 = new MenuItem("Add item"); //Currently not working
         MenuItem entry2 = new MenuItem("Delete"); //Currently not working
@@ -186,6 +221,7 @@ public class DashboardController {
                         alert.showAndWait();
                         return;
                     }
+                    fetchUserDetails();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -200,7 +236,8 @@ public class DashboardController {
         String response = httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/getUser", json.toString());
         json = new JSONObject(response);
         if (json.get("status").toString().equals("ok")) {
-            currentUser = new User(Integer.parseInt(json.get("userID").toString()), json.get("userFullName").toString(), json.get("userEmail").toString());
+            currentUser = new User(Integer.parseInt(json.get("userID").toString()), json.get("userFullName").toString(), json.get("userEmail").toString(),
+                    Integer.parseInt(json.get("userTeamID").toString()), Boolean.parseBoolean(json.get("userIsTeamOwner").toString()));
         } else {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Еrror");
@@ -208,6 +245,29 @@ public class DashboardController {
             alert.showAndWait();
             return;
 
+        }
+    }
+
+    private ArrayList<User> fetchUsersByTeamID(int teamID) throws IOException{
+        if(teamID != 0) {
+            ArrayList<User> users = new ArrayList<>();
+            HTTPRequestManager httpRequestManager = new HTTPRequestManager();
+            JSONObject json = new JSONObject();
+            json.put("token", token);
+            json.put("teamID", teamID);
+            String response = httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/getUsersFromTeam", json.toString());
+            json = new JSONObject(response);
+            if (json.get("status").toString().equals("ok")) {
+                JSONArray jsonArray = json.getJSONArray("users");
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject itr = jsonArray.getJSONObject(i);
+                    users.add(new User(Integer.parseInt(itr.get("id").toString()), itr.get("fullName").toString(), itr.get("email").toString(),
+                            Integer.parseInt(itr.get("teamID").toString()), Boolean.parseBoolean(itr.get("isOwner").toString())));
+                }
+            }
+            return users;
+        }else{
+            return null;
         }
     }
 
