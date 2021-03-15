@@ -38,6 +38,7 @@ public class DashboardController {
     @FXML private Menu collaborateMenu;
     @FXML private MenuItem addTeam;
     @FXML private Menu myTeamMenu;
+    @FXML private MenuItem createProjectItem;
 
     @FXML private MenuItem invite;
     @FXML private MenuItem join;
@@ -50,9 +51,22 @@ public class DashboardController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        if(currentUser.getTeamID() != 0) {
+            HTTPRequestManager httpRequestManager = new HTTPRequestManager();
+            JSONObject json = new JSONObject();
+            json.put("token", token);
+            try {
+                String response = httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/getTeamName", json.toString());
+                json = new JSONObject(response);
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+            ftpManager = new FTPManager(FTPManager.FTP_SERVER_ADDRESS, 21, json.get("teamName").toString(), "");
+            loadFTPTree();
 
-        ftpManager = new FTPManager("localhost", 21, "TestUser7", "");
-        loadFTPTree();
+
+
+        }
 
 
         if(currentUser.getTeamID() != 0 && currentUser.isTeamOwner()) {
@@ -108,6 +122,8 @@ public class DashboardController {
                             alert.showAndWait();
                             return;
                         }
+                        fetchUserDetails();
+                        Main.openDashboardStage(token);
                     }catch (IOException e){
                         e.printStackTrace();
                     }
@@ -115,6 +131,26 @@ public class DashboardController {
             });
             myTeamMenu.getItems().add(transferOwnerItem);
         }
+
+        createProjectItem.setOnAction(event -> {
+            TextInputDialog textInputDialog = new TextInputDialog();
+            textInputDialog.setTitle("Create a project");
+            textInputDialog.getDialogPane().setContentText("Enter project name:");
+            Optional<String> result = textInputDialog.showAndWait();
+            TextField input = textInputDialog.getEditor();
+            if (input.getText() != null || input.getText().length() == 0) {
+                String path = getPathOfItem();
+                System.out.println(path + "/" + input.getText());
+                if (!ftpManager.addNewDirectory(path + "/" + input.getText())) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Create project error");
+                    alert.setContentText("Couldn't create the project. Try again later.");
+                    alert.showAndWait();
+                    return;
+                }
+                loadFTPTree();
+            }
+        });
 
 
         MenuItem addItem = new MenuItem("Add item");  // FIXME: Currently not working
@@ -129,6 +165,7 @@ public class DashboardController {
 
         deleteItem.setOnAction(event -> {
             String path = getPathOfItem();
+            System.out.println(path);
             ftpManager.deleteFile(path);
             loadFTPTree();
         });
@@ -172,7 +209,7 @@ public class DashboardController {
             loadFTPTree();
         });
 
-        treeView.setContextMenu(new ContextMenu(addItem, deleteItem, addNewDirectory, renameItem));
+        treeView.setContextMenu(new ContextMenu(addItem, deleteItem, addNewDirectory, renameItem, refresh));
 
         addTeam.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -197,6 +234,8 @@ public class DashboardController {
                             alert.showAndWait();
                             return;
                         }
+                        fetchUserDetails();
+                        Main.openDashboardStage(token);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -258,6 +297,7 @@ public class DashboardController {
                         return;
                     }
                     fetchUserDetails();
+                    Main.openDashboardStage(token);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -358,15 +398,16 @@ public class DashboardController {
             pathBuilder.insert(0, "/");
         }
         String path = pathBuilder.toString();
-        path = path.replace("/Test", "");
+        path = path.replace("/File tree", "");
         return path;
     }
 
     public void loadFTPTree(){
         FTPFile[] files = ftpManager.getFiles();
 
-        TreeItem<String> item = new TreeItem<String>("Test");
+        TreeItem<String> item = new TreeItem<String>("File tree");
         treeView.setRoot(item);
+        item.setExpanded(true);
 
         for (FTPFile f : files) {
             if (f.isDirectory()) {
