@@ -29,11 +29,6 @@
                     <MenuItem mnemonicParsing="false" text="About" />
                   </items>
                 </Menu>
-                  <Menu mnemonicParsing="false" text="Refresh">
-                    <items>
-                      <MenuItem mnemonicParsing="false" text="Action 1" />
-                    </items>
-                  </Menu>
                   <Menu fx:id="collaborateMenu" mnemonicParsing="false" text="Collaborate">
                     <items>
                         <MenuItem fx:id="addTeam" mnemonicParsing="false" text="Create team">
@@ -44,7 +39,7 @@
                               <MenuItem fx:id="invite" mnemonicParsing="false" text="Invite others" />
                           </items>
                         </Menu>
-                        <MenuItem mnemonicParsing="false" text="Create project" />
+                        <MenuItem fx:id="createProjectItem" mnemonicParsing="false" text="Create project" />
                     </items>
                   </Menu>
               </menus>
