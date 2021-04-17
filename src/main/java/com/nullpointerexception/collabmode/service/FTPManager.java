@@ -1,11 +1,16 @@
 package com.nullpointerexception.collabmode.service;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.ConnectException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class FTPManager {
     private static FTPClient ftpClient = null;
@@ -98,4 +103,58 @@ public class FTPManager {
         }
         return false;
     }
+
+    public boolean uploadFile(String pathname){
+        boolean uploaded;
+        if(ftpClient != null){
+            try {
+                ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+                File uploadFile = new File(pathname);
+                Path uploadFilePath = Paths.get(pathname);
+                String uploadedFile = uploadFilePath.getFileName().toString();
+                if(FilenameUtils.getExtension(uploadedFile).equals("tmp")){
+                    int p = uploadedFile.lastIndexOf('.');
+                    if (p>0) {
+                        uploadedFile = uploadedFile.substring(0, p);
+                    }
+                }
+
+                InputStream inputStream = new FileInputStream(uploadFile);
+
+                System.out.println("Start uploading first file");
+                uploaded = ftpClient.storeFile(uploadedFile, inputStream);
+                inputStream.close();
+                return uploaded;
+
+
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+    public boolean downloadFile(String pathname){
+        boolean downloaded;
+        if(ftpClient != null){
+            try {
+                ftpClient.setFileType(FTP.BINARY_FILE_TYPE);
+                String tempFolder = System.getProperty("java.io.tmpdir");
+                Path tempFolderPath = Paths.get(tempFolder + "\\.collabmode");
+                File downloadedFile = new File(tempFolderPath.toString() + "\\" + Paths.get(pathname).getFileName());
+                OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(downloadedFile));
+                downloaded = ftpClient.retrieveFile(pathname, outputStream);
+                outputStream.close();
+                return downloaded;
+
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+
+
+
 }
