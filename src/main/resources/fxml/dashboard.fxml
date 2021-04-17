@@ -45,7 +45,10 @@
               </menus>
             </MenuBar>
             <JFXTreeView fx:id="treeView" layoutY="27.0" prefHeight="693.0" prefWidth="248.0" />
-            <CodeArea fx:id="codeArea" layoutX="248.0" layoutY="27.0" prefHeight="693.0" prefWidth="652.0" />
+       <AnchorPane fx:id = "anchorPaneArea" layoutX="248.0" layoutY="27.0" prefHeight="693.0" prefWidth="652.0">
+           <children>
+            <CodeArea fx:id="codeArea" layoutX="0" layoutY="0" prefHeight="693.0" prefWidth="652.0" />
+           </children></AnchorPane>
          </children></AnchorPane>
    </top>
 </BorderPane>
