@@ -31,6 +31,8 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception{
         hostServices = HostServicesFactory.getInstance(this);
         String dataFolder = System.getenv("APPDATA");
+        String tempFolder = System.getProperty("java.io.tmpdir");
+        Files.createDirectories(Paths.get(tempFolder + "\\.collabmode"));
         Files.createDirectories(Paths.get(dataFolder + "\\CollabMode"));
         File authFile = new File(dataFolder + "\\CollabMode\\auth.ser");
         if(authFile.exists()){
@@ -54,16 +56,6 @@ public class Main extends Application {
 
             }
         }else{
-//            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/register.fxml"));
-////            BorderPane root = (BorderPane) loader.load();
-////            Scene scene = new Scene(root,900,725);
-////            scene.getStylesheets().add(String.valueOf(getClass().getClassLoader().getResource("css/application.css")));
-////            primaryStage.setScene(scene);
-////            primaryStage.setTitle("CollabMode v0.0.1-SNAPSHOT");
-////            primaryStage.show();
-////
-////            primaryStage.getIcons().add(new Image("/assets/logo_wt.png"));
-////            currentStage = primaryStage;
             Main.openRegisterStage();
         }
     }
@@ -116,6 +108,7 @@ public class Main extends Application {
         dashboardStage.setScene(scene);
         dashboardStage.setTitle("CollabMode v0.0.1-SNAPSHOT");
         dashboardStage.show();
+        dashboardController.setupAccelerator();
         dashboardStage.getIcons().add(new Image("/assets/logo_wt.png"));
         if(currentStage != null) {
             currentStage.close();

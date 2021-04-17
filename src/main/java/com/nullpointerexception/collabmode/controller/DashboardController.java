@@ -13,12 +13,15 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
+import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.net.ftp.FTPFile;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.GenericStyledArea;
@@ -31,7 +34,10 @@ import org.json.JSONObject;
 import org.reactfx.Subscription;
 import org.reactfx.collection.ListModification;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -79,6 +85,10 @@ public class DashboardController {
     private static String token = "";
     private static User currentUser = null;
     private static FTPManager ftpManager;
+    private static File currentFile = null;
+    private static String currentFileLocationOnFTP = "";
+
+    private static Stage stage;
 
     @FXML private JFXTreeView<String> treeView;
     @FXML private MenuBar menuBar;
@@ -112,9 +122,6 @@ public class DashboardController {
             }
             ftpManager = new FTPManager(FTPManager.FTP_SERVER_ADDRESS, 21, json.get("teamName").toString(), "");
             loadFTPTree();
-
-
-
         }
 
 
@@ -181,6 +188,7 @@ public class DashboardController {
             myTeamMenu.getItems().add(transferOwnerItem);
         }
 
+
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
         codeArea.setContextMenu( new DefaultContextMenu() );
         codeArea.getVisibleParagraphs().addModificationObserver
@@ -208,26 +216,6 @@ public class DashboardController {
         timeline.play();
 
 
-
-//        executor = Executors.newSingleThreadExecutor();
-//        codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
-//        Subscription cleanupWhenDone = codeArea.multiPlainChanges()
-//                .successionEnds(java.time.Duration.ofMillis(500))
-//                .supplyTask(this::computeHighlightingAsync)
-//                .awaitLatest(codeArea.multiPlainChanges())
-//                .filterMap(t -> {
-//                    if(t.isSuccess()) {
-//                        return Optional.of(t.get());
-//                    } else {
-//                        t.getFailure().printStackTrace();
-//                        return Optional.empty();
-//                    }
-//                })
-//                .subscribe(this::applyHighlighting);
-
-
-
-
         createProjectItem.setOnAction(event -> {
             TextInputDialog textInputDialog = new TextInputDialog();
             textInputDialog.setTitle("Create a project");
@@ -249,11 +237,12 @@ public class DashboardController {
         });
 
 
-        MenuItem addItem = new MenuItem("Add item");  // FIXME: Currently not working
+        MenuItem addItem = new MenuItem("Add item");
         MenuItem deleteItem = new MenuItem("Delete");
         MenuItem addNewDirectory = new MenuItem("New folder");
         MenuItem renameItem = new MenuItem("Rename");
         MenuItem refresh = new MenuItem("Refresh");
+        MenuItem load = new MenuItem("Load file");
 
         refresh.setOnAction(event -> {
             loadFTPTree();
@@ -263,6 +252,48 @@ public class DashboardController {
             String path = getPathOfItem();
             System.out.println(path);
             ftpManager.deleteFile(path);
+            loadFTPTree();
+        });
+
+        load.setOnAction(event -> {
+            String path = getPathOfItem();
+            System.out.println(path);
+            ftpManager.downloadFile(path);
+            String tempFolder = System.getProperty("java.io.tmpdir");
+            Path tempFolderPath = Paths.get(tempFolder + "\\.collabmode");
+            File downloadedFile = new File(tempFolderPath.toString() + "\\" + Paths.get(path).getFileName());
+            FileInputStream inputStream = null;
+            Scanner sc = null;
+            currentFile = downloadedFile;
+            currentFileLocationOnFTP = path;
+            try {
+                inputStream = new FileInputStream(downloadedFile);
+                sc = new Scanner(inputStream, "UTF-8");
+                codeArea.deleteText(0, codeArea.getLength());
+                while (sc.hasNextLine()) {
+                    String line = sc.nextLine();
+                    codeArea.appendText(line);
+                    codeArea.appendText("\n");
+                }
+                // note that Scanner suppresses exceptions
+                if (sc.ioException() != null) {
+                    throw sc.ioException();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (inputStream != null) {
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (sc != null) {
+                    sc.close();
+                }
+            }
+
             loadFTPTree();
         });
 
@@ -305,7 +336,32 @@ public class DashboardController {
             loadFTPTree();
         });
 
-        treeView.setContextMenu(new ContextMenu(addItem, deleteItem, addNewDirectory, renameItem, refresh));
+        addItem.setOnAction(event -> {
+            TextInputDialog textInputDialog = new TextInputDialog();
+            textInputDialog.setTitle("Create a new item");
+            textInputDialog.getDialogPane().setContentText("Item name:");
+            Optional<String> result = textInputDialog.showAndWait();
+            TextField input = textInputDialog.getEditor();
+            if (input.getText() != null || input.getText().length() == 0) {
+
+                String tempFolder = System.getProperty("java.io.tmpdir");
+                Path tempFolderPath = Paths.get(tempFolder + "\\.collabmode");
+                File newItem = new File(tempFolderPath.toString() + "\\" + input.getText() + ".tmp");
+                try {
+                    newItem.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                String itemToBeUploaded = newItem.getAbsolutePath();
+                ftpManager.uploadFile(itemToBeUploaded); // TODO: error check
+
+                newItem.delete();
+
+                loadFTPTree();
+            }
+        });
+
+        treeView.setContextMenu(new ContextMenu(addItem, deleteItem, addNewDirectory, renameItem, refresh, load));
 
         addTeam.setOnAction(new EventHandler<ActionEvent>() {
             @Override
@@ -470,6 +526,34 @@ public class DashboardController {
         }));
         timeline.play();
 
+    }
+
+    public void setupAccelerator(){
+        if(codeArea != null){
+            Scene scene = codeArea.getScene();
+            if(scene != null){
+                scene.getAccelerators().put(KeyCombination.keyCombination("CTRL+S"), new Runnable() {
+                    @Override
+                    public void run() {
+                        if(currentFile != null) {
+                            if(ftpManager != null) {
+                                PrintWriter writer = null;
+                                try {
+                                    System.out.println("Here");
+                                    writer = new PrintWriter(currentFile.getAbsolutePath(), "UTF-8");
+                                    writer.print(codeArea.getText());
+                                    writer.close();
+                                } catch (FileNotFoundException | UnsupportedEncodingException e) {
+                                    e.printStackTrace();
+                                }
+                                ftpManager.deleteFile(currentFileLocationOnFTP);
+                                ftpManager.uploadFile(currentFile.getAbsolutePath());
+                            }
+                        }
+                    }
+                });
+            }
+        }
     }
 
 
