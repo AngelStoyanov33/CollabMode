@@ -15,6 +15,8 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.util.Duration;
 import org.apache.commons.net.ftp.FTPFile;
@@ -568,20 +570,47 @@ public class DashboardController {
 
     private class DefaultContextMenu extends ContextMenu
     {
-        private MenuItem fold, unfold, print;
+        private MenuItem fold, unfold, copy, paste, cut, undo, redo;
 
         public DefaultContextMenu()
         {
-            fold = new MenuItem( "Fold selected text" );
+            copy = new MenuItem("Copy");
+            copy.setAccelerator(new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN));
+            copy.setOnAction(AE -> {
+                copy();
+            });
+
+            paste = new MenuItem("Paste");
+            paste.setAccelerator(new KeyCodeCombination(KeyCode.V, KeyCombination.CONTROL_DOWN));
+            paste.setOnAction(AE -> {
+                paste();
+            });
+
+            cut = new MenuItem("Cut");
+            cut.setAccelerator(new KeyCodeCombination(KeyCode.X, KeyCombination.CONTROL_DOWN));
+            cut.setOnAction(AE -> {
+                cut();
+            });
+
+            undo = new MenuItem("Undo");
+            undo.setAccelerator(new KeyCodeCombination(KeyCode.Z, KeyCombination.CONTROL_DOWN));
+            undo.setOnAction(AE -> {
+                undo();
+            });
+
+            redo = new MenuItem("Redo");
+            redo.setAccelerator(new KeyCodeCombination(KeyCode.Y, KeyCombination.CONTROL_DOWN));
+            redo.setOnAction(AE -> {
+                redo();
+            });
+
+            fold = new MenuItem( "Fold" );
             fold.setOnAction( AE -> { hide(); fold(); } );
 
-            unfold = new MenuItem( "Unfold from cursor" );
+            unfold = new MenuItem( "Unfold" );
             unfold.setOnAction( AE -> { hide(); unfold(); } );
 
-            print = new MenuItem( "Print" );
-            print.setOnAction( AE -> { hide(); print(); } );
-
-            getItems().addAll( fold, unfold, print );
+            getItems().addAll( fold, unfold, copy, paste, cut, undo, redo);
         }
 
         /**
@@ -599,8 +628,28 @@ public class DashboardController {
             area.unfoldParagraphs( area.getCurrentParagraph() );
         }
 
-        private void print() {
-            System.out.println( ((CodeArea) getOwnerNode()).getText() );
+        private void copy(){
+            ((CodeArea) getOwnerNode()).copy();
+        }
+
+        private void paste(){
+            ((CodeArea) getOwnerNode()).paste();
+        }
+
+        private void cut(){
+            ((CodeArea) getOwnerNode()).cut();
+        }
+
+        private void undo(){
+            if(((CodeArea) getOwnerNode()).isUndoAvailable()){
+                ((CodeArea) getOwnerNode()).undo();
+            }
+        }
+
+        private void redo(){
+            if(((CodeArea) getOwnerNode()).isRedoAvailable()){
+                ((CodeArea) getOwnerNode()).redo();
+            }
         }
     }
 }
