@@ -5,6 +5,7 @@ import com.jfoenix.controls.JFXPasswordField;
 import com.jfoenix.controls.JFXTextField;
 import com.nullpointerexception.collabmode.application.Main;
 import com.nullpointerexception.collabmode.service.HTTPRequestManager;
+import com.nullpointerexception.collabmode.service.Serializer;
 import com.nullpointerexception.collabmode.util.EmailUtils;
 import com.nullpointerexception.collabmode.util.PasswordUtils;
 import javafx.event.ActionEvent;
@@ -41,43 +42,42 @@ public class LoginController {
         });
 
 
-        signInButton.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                String emailAddress = emailAddressInput.getText().trim();
-                String password = passwordPassField.getText().trim();
+        signInButton.setOnAction(event -> {
+            String emailAddress = emailAddressInput.getText().trim();
+            String password = passwordPassField.getText().trim();
 
-                if(!EmailUtils.isValid(emailAddress)){
-                    emailAddressInput.setFocusColor(Color.RED);
-                    emailAddressInput.setUnFocusColor(Color.RED);
+            if(!EmailUtils.isValid(emailAddress)){
+                emailAddressInput.setFocusColor(Color.RED);
+                emailAddressInput.setUnFocusColor(Color.RED);
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Email address error");
+                alert.setContentText("Invalid email address!");
+                alert.showAndWait();
+                return;
+            }
+
+            password = PasswordUtils.hash(password);
+            JSONObject json = new JSONObject();
+            json.put("emailAddress", emailAddress);
+            json.put("password", password);
+            HTTPRequestManager httpRequestManager = new HTTPRequestManager();
+            try {
+                String response = httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/login",  json.toString());
+                JSONObject responseToJson = new JSONObject(response);
+                if(!responseToJson.get("status").toString().equals("ok")){
                     Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Email address error");
-                    alert.setContentText("Invalid email address!");
+                    alert.setTitle("Login error");
+                    alert.setContentText(responseToJson.get("errorMessage").toString());
                     alert.showAndWait();
                     return;
+                }else{
+                    Serializer serializer = new Serializer();
+                    serializer.serializeToken(responseToJson.get("token").toString());
+                    Main.openDashboardStage(responseToJson.get("token").toString());
                 }
 
-                password = PasswordUtils.hash(password);
-                JSONObject json = new JSONObject();
-                json.put("emailAddress", emailAddress);
-                json.put("password", password);
-                HTTPRequestManager httpRequestManager = new HTTPRequestManager();
-                try {
-                    String response = httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/login",  json.toString());
-                    JSONObject responseToJson = new JSONObject(response);
-                    if(!responseToJson.get("status").toString().equals("ok")){
-                        Alert alert = new Alert(Alert.AlertType.ERROR);
-                        alert.setTitle("Login error");
-                        alert.setContentText(responseToJson.get("errorMessage").toString());
-                        alert.showAndWait();
-                        return;
-                    }else{
-                        Main.openDashboardStage(responseToJson.get("token").toString());
-                    }
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         });
     }
