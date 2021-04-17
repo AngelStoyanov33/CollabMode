@@ -9,7 +9,7 @@ import java.net.ConnectException;
 
 public class FTPManager {
     private static FTPClient ftpClient = null;
-    public static final String FTP_SERVER_ADDRESS = "192.168.0.105";
+    public static final String FTP_SERVER_ADDRESS = "192.168.0.106";
 
     public FTPManager(String serverAddress, int serverPort, String ftpUser, String ftpPassword){
         ftpClient = new FTPClient();

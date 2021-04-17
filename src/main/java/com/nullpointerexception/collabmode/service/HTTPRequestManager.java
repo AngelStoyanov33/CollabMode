@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 
 public class HTTPRequestManager {
 
-    public static final String SERVER_LOCATION = "http://192.168.0.105:8080";
+    public static final String SERVER_LOCATION = "http://192.168.0.106:8080";
 
     public String sendJSONRequest(final String URL, String jsonInputString) throws IOException {
         HttpURLConnection httpURLConnection = (HttpURLConnection) new URL(URL).openConnection();
