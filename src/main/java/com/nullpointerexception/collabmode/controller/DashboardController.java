@@ -19,10 +19,12 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.net.ftp.FTPFile;
+import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.GenericStyledArea;
 import org.fxmisc.richtext.LineNumberFactory;
@@ -93,6 +95,8 @@ public class DashboardController {
     @FXML private JFXTreeView<String> treeView;
     @FXML private MenuBar menuBar;
     @FXML private CodeArea codeArea;
+
+    @FXML private AnchorPane anchorPaneArea;
 
     @FXML private Menu collaborateMenu;
     @FXML private MenuItem addTeam;
@@ -188,7 +192,13 @@ public class DashboardController {
             myTeamMenu.getItems().add(transferOwnerItem);
         }
 
+        VirtualizedScrollPane sp = new VirtualizedScrollPane(codeArea);
+        anchorPaneArea.getChildren().add(sp);
 
+        anchorPaneArea.setLeftAnchor(sp, 0.0);
+        anchorPaneArea.setRightAnchor(sp, 0.0);
+        anchorPaneArea.setBottomAnchor(sp, 0.0);
+        anchorPaneArea.setTopAnchor(sp, 0.0);
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
         codeArea.setContextMenu( new DefaultContextMenu() );
         codeArea.getVisibleParagraphs().addModificationObserver

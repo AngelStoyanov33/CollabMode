@@ -46,7 +46,7 @@ public class Main extends Application {
                     String response = httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/checkTokenValidity", json.toString());
                     json = new JSONObject(response);
                     if (json.get("status").toString().equals("ok")) {
-                        Main.openDashboardStage(token);
+                        Main.openDashboardStage(token, "Java");
                     }else{
                         Main.openRegisterStage();
                     }
@@ -96,9 +96,10 @@ public class Main extends Application {
         currentStage = registerStage;
     }
 
-    public static void openDashboardStage(String token) throws IOException {
+    public static void openDashboardStage(String token, String mode) throws IOException {
         Stage dashboardStage = new Stage();
         DashboardController.setToken(token);
+        DashboardController.setMode(mode);
         FXMLLoader loader = new FXMLLoader(Main.class.getResource("/fxml/dashboard.fxml"));
         BorderPane root = (BorderPane) loader.load();
         Scene scene = new Scene(root,900,725);

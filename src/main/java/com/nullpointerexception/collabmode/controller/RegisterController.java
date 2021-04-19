@@ -128,7 +128,7 @@ public class RegisterController {
                     Serializer serializer = new Serializer();
                     System.out.println("Here");
                     serializer.serializeToken(responseToJson.get("token").toString());
-                    Main.openDashboardStage(responseToJson.get("token").toString());
+                    Main.openDashboardStage(responseToJson.get("token").toString(), "Java");
                 }
 
             } catch (IOException e) {

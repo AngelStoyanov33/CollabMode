@@ -73,7 +73,7 @@ public class LoginController {
                 }else{
                     Serializer serializer = new Serializer();
                     serializer.serializeToken(responseToJson.get("token").toString());
-                    Main.openDashboardStage(responseToJson.get("token").toString());
+                    Main.openDashboardStage(responseToJson.get("token").toString(), "Java");
                 }
 
             } catch (IOException e) {
