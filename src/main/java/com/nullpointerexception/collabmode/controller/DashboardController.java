@@ -8,6 +8,7 @@ import com.nullpointerexception.collabmode.service.HTTPRequestManager;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -47,7 +48,7 @@ import java.util.regex.Pattern;
 
 public class DashboardController {
 
-    private static final String[] KEYWORDS = new String[] {
+    private static String[] KEYWORDS = new String[] {
             "abstract", "assert", "boolean", "break", "byte",
             "case", "catch", "char", "class", "const",
             "continue", "default", "do", "double", "else",
@@ -60,7 +61,7 @@ public class DashboardController {
             "transient", "try", "void", "volatile", "while"
     };
 
-    private static final String[] KEYWORDS_CPP = new String[]{
+    private static String[] KEYWORDS_CPP = new String[]{
             "asm", "auto", "bool", "break", "case", "catch",
             "char", "class", "const", "const_char", "continue",
             "default", "delete", "do", "double", "dynamic_cast",
@@ -76,15 +77,15 @@ public class DashboardController {
             "xor_eq", "bitand", "not", "or_eq"
     };
 
-    private static final String KEYWORD_PATTERN = "\\b(" + String.join("|", KEYWORDS) + ")\\b";
-    private static final String PAREN_PATTERN = "\\(|\\)";
-    private static final String BRACE_PATTERN = "\\{|\\}";
-    private static final String BRACKET_PATTERN = "\\[|\\]";
-    private static final String SEMICOLON_PATTERN = "\\;";
-    private static final String STRING_PATTERN = "\"([^\"\\\\]|\\\\.)*\"";
-    private static final String COMMENT_PATTERN = "//[^\n]*" + "|" + "/\\*(.|\\R)*?\\*/";
+    private static String KEYWORD_PATTERN = "\\b(" + String.join("|", KEYWORDS) + ")\\b";
+    private static String PAREN_PATTERN = "\\(|\\)";
+    private static String BRACE_PATTERN = "\\{|\\}";
+    private static String BRACKET_PATTERN = "\\[|\\]";
+    private static String SEMICOLON_PATTERN = "\\;";
+    private static String STRING_PATTERN = "\"([^\"\\\\]|\\\\.)*\"";
+    private static String COMMENT_PATTERN = "//[^\n]*" + "|" + "/\\*(.|\\R)*?\\*/";
 
-    private static final Pattern PATTERN = Pattern.compile(
+    private static Pattern PATTERN = Pattern.compile(
             "(?<KEYWORD>" + KEYWORD_PATTERN + ")"
                     + "|(?<PAREN>" + PAREN_PATTERN + ")"
                     + "|(?<BRACE>" + BRACE_PATTERN + ")"
@@ -143,6 +144,8 @@ public class DashboardController {
             ftpManager = new FTPManager(FTPManager.FTP_SERVER_ADDRESS, 21, json.get("teamName").toString(), "");
             loadFTPTree();
         }
+
+        loadHighlight(mode);
 
 
         if(currentUser.getTeamID() != 0 && currentUser.isTeamOwner()) {
@@ -217,8 +220,28 @@ public class DashboardController {
         anchorPaneArea.setTopAnchor(sp, 0.0);
 
         choiceBox.getItems().add("Java");
-        choiceBox.setValue("Java");
         choiceBox.getItems().add("C++");
+        choiceBox.setValue(mode);
+        choiceBox.getSelectionModel()
+                .selectedItemProperty()
+                .addListener( (ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
+                    System.out.println(newValue);
+                    if(newValue.equals("Java")){
+                        setMode(newValue);
+                        try {
+                            Main.openDashboardStage(token, mode);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }else if(newValue.equals("C++")){
+                        setMode(newValue);
+                        try {
+                            Main.openDashboardStage(token, mode);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
 
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
         codeArea.setContextMenu( new DefaultContextMenu() );
@@ -289,8 +312,10 @@ public class DashboardController {
         load.setOnAction(event -> {
             Tab tab = new Tab();
             tab.setText(getPathOfItem());
+            tab.setClosable(true);
             tabPane.getTabs().add(tab);
             tabPane.getSelectionModel().select(tabPane.getTabs().size() - 1);
+            tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.ALL_TABS);
             //TODO: Listener onclick tab (on select)
 
             String path = getPathOfItem();
@@ -795,5 +820,57 @@ public class DashboardController {
     public static void setMode(String mode){
         DashboardController.mode = mode;
     }
+
+    public static void loadHighlight(String mode){
+        if(mode.equals("Java")) {
+            KEYWORDS = new String[]{
+                    "abstract", "assert", "boolean", "break", "byte",
+                    "case", "catch", "char", "class", "const",
+                    "continue", "default", "do", "double", "else",
+                    "enum", "extends", "final", "finally", "float",
+                    "for", "goto", "if", "implements", "import",
+                    "instanceof", "int", "interface", "long", "native",
+                    "new", "package", "private", "protected", "public",
+                    "return", "short", "static", "strictfp", "super",
+                    "switch", "synchronized", "this", "throw", "throws",
+                    "transient", "try", "void", "volatile", "while"
+            };
+        }else if(mode.equals("C++")){
+            KEYWORDS = new String[]{
+                    "asm", "auto", "bool", "break", "case", "catch",
+                    "char", "class", "const", "const_char", "continue",
+                    "default", "delete", "do", "double", "dynamic_cast",
+                    "else", "enum", "explicit", "export", "extern", "false",
+                    "float", "for", "friend", "goto", "if", "inline", "int",
+                    "long", "mutable", "namespace", "new", "operator",
+                    "private", "protected", "public", "register", "reinterpret_cast",
+                    "return", "short", "signed", "sizeof", "static", "static_cast",
+                    "struct", "switch", "template", "this", "throw", "true",
+                    "try", "typedef", "typeid", "typename", "union", "unsigned",
+                    "using", "virtual", "void", "volatile", "wchar_t", "while",
+                    "And", "bitor", "not_eq", "xor", "and_eq", "compl", "or",
+                    "xor_eq", "bitand", "not", "or_eq", "#include", "#define"
+            };
+        }
+
+        KEYWORD_PATTERN = "\\b(" + String.join("|", KEYWORDS) + ")\\b";
+        PAREN_PATTERN = "\\(|\\)";
+        BRACE_PATTERN = "\\{|\\}";
+        BRACKET_PATTERN = "\\[|\\]";
+        SEMICOLON_PATTERN = "\\;";
+        STRING_PATTERN = "\"([^\"\\\\]|\\\\.)*\"";
+        COMMENT_PATTERN = "//[^\n]*" + "|" + "/\\*(.|\\R)*?\\*/";
+
+        PATTERN = Pattern.compile(
+                "(?<KEYWORD>" + KEYWORD_PATTERN + ")"
+                        + "|(?<PAREN>" + PAREN_PATTERN + ")"
+                        + "|(?<BRACE>" + BRACE_PATTERN + ")"
+                        + "|(?<BRACKET>" + BRACKET_PATTERN + ")"
+                        + "|(?<SEMICOLON>" + SEMICOLON_PATTERN + ")"
+                        + "|(?<STRING>" + STRING_PATTERN + ")"
+                        + "|(?<COMMENT>" + COMMENT_PATTERN + ")"
+        );
+    }
+
 }
 
