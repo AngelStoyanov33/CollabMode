@@ -21,6 +21,7 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.apache.commons.io.FilenameUtils;
@@ -32,6 +33,7 @@ import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.Paragraph;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
+import org.json.HTTP;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.reactfx.collection.ListModification;
@@ -59,22 +61,6 @@ public class DashboardController {
             "return", "short", "static", "strictfp", "super",
             "switch", "synchronized", "this", "throw", "throws",
             "transient", "try", "void", "volatile", "while"
-    };
-
-    private static String[] KEYWORDS_CPP = new String[]{
-            "asm", "auto", "bool", "break", "case", "catch",
-            "char", "class", "const", "const_char", "continue",
-            "default", "delete", "do", "double", "dynamic_cast",
-            "else", "enum", "explicit", "export", "extern", "false",
-            "float", "for", "friend", "goto", "if", "inline", "int",
-            "long", "mutable", "namespace", "new", "operator",
-            "private", "protected", "public", "register", "reinterpret_cast",
-            "return", "short", "signed", "sizeof", "static", "static_cast",
-            "struct", "switch", "template", "this", "throw", "true",
-            "try", "typedef", "typeid", "typename", "union", "unsigned",
-            "using", "virtual", "void", "volatile", "wchar_t", "while",
-            "And", "bitor", "not_eq", "xor", "and_eq", "compl", "or",
-            "xor_eq", "bitand", "not", "or_eq"
     };
 
     private static String KEYWORD_PATTERN = "\\b(" + String.join("|", KEYWORDS) + ")\\b";
@@ -143,6 +129,37 @@ public class DashboardController {
             }
             ftpManager = new FTPManager(FTPManager.FTP_SERVER_ADDRESS, 21, json.get("teamName").toString(), "");
             loadFTPTree();
+
+            MenuItem leaveTeamItem = new MenuItem();
+            leaveTeamItem.setText("Leave");
+            leaveTeamItem.setOnAction(event -> {
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION, "");
+                alert.initModality(Modality.APPLICATION_MODAL);
+                alert.getDialogPane().setContentText("Are you sure you want to leave your team?");
+                alert.getDialogPane().setHeaderText("Hold up!");
+                Optional<ButtonType> alertResult = alert.showAndWait();
+                if (ButtonType.OK.equals(alertResult.get())) {
+                    JSONObject secondJson = new JSONObject();
+                    secondJson.put("token", token);
+                    try{
+                        String response = httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/leave", secondJson.toString());
+                        secondJson = new JSONObject(response);
+                        if(!secondJson.get("status").toString().equals("ok")){
+                            Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                            errorAlert.setTitle("Leave error");
+                            errorAlert.setContentText(secondJson.get("errorMessage").toString());
+                            errorAlert.showAndWait();
+                            return;
+                        }
+                    }catch(IOException e){
+                        e.printStackTrace();
+                    }
+                }else if(ButtonType.CANCEL.equals(alertResult.get())){
+                    return;
+                }
+            });
+            myTeamMenu.getItems().add(leaveTeamItem);
+
         }
 
         loadHighlight(mode);
@@ -273,6 +290,31 @@ public class DashboardController {
             myTeamMenu.getItems().add(transferOwnerItem);
             myTeamMenu.getItems().add(kickTeammates);
         }
+        MenuItem logout = new MenuItem();
+        logout.setText("Logout");
+        collaborateMenu.getItems().add(logout);
+        logout.setOnAction(event -> {
+            String dataFolder = System.getenv("APPDATA");
+            File authFile = new File(dataFolder + "\\CollabMode\\auth.ser");
+            if(authFile.exists()){
+                if(authFile.isFile()){
+                    if(!authFile.delete()){
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Logout error");
+                        alert.setContentText("Could not logout, try again later");
+                        alert.showAndWait();
+                    }
+                }
+            }
+            DashboardController.setToken("");
+            try {
+                Main.openLoginStage();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
+
 
         VirtualizedScrollPane sp = new VirtualizedScrollPane(codeArea);
         anchorPaneArea.getChildren().add(sp);
@@ -400,7 +442,6 @@ public class DashboardController {
                     codeArea.appendText(line);
                     codeArea.appendText("\n");
                 }
-                // note that Scanner suppresses exceptions
                 if (sc.ioException() != null) {
                     throw sc.ioException();
                 }
@@ -523,35 +564,32 @@ public class DashboardController {
             }
         });
 
-        invite.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                TextInputDialog textInputDialog = new TextInputDialog();
-                textInputDialog.setTitle("Invite others to your team");
-                textInputDialog.getDialogPane().setContentText("Team code:");
-                TextField input = textInputDialog.getEditor();
-                input.setEditable(false);
-                input.setDisable(true);
-                HTTPRequestManager httpRequestManager = new HTTPRequestManager();
-                JSONObject json = new JSONObject();
-                json.put("token", token);
-                try {
-                    String response = httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/sendInvite", json.toString());
-                    json = new JSONObject(response);
-                    if(!json.get("status").toString().equals("ok")) {
-                        Alert alert = new Alert(Alert.AlertType.ERROR);
-                        alert.setTitle("Invite others error");
-                        alert.setContentText(json.get("errorMessage").toString());
-                        alert.showAndWait();
-                        return;
-                    }
-                        input.setText(json.get("teamCode").toString());
-                } catch (IOException e) {
-                    e.printStackTrace();
+        invite.setOnAction(event -> {
+            TextInputDialog textInputDialog = new TextInputDialog();
+            textInputDialog.setTitle("Invite others to your team");
+            textInputDialog.getDialogPane().setContentText("Team code:");
+            TextField input = textInputDialog.getEditor();
+            input.setEditable(false);
+            input.setDisable(true);
+            HTTPRequestManager httpRequestManager = new HTTPRequestManager();
+            JSONObject json = new JSONObject();
+            json.put("token", token);
+            try {
+                String response = httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/sendInvite", json.toString());
+                json = new JSONObject(response);
+                if(!json.get("status").toString().equals("ok")) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Invite others error");
+                    alert.setContentText(json.get("errorMessage").toString());
+                    alert.showAndWait();
+                    return;
                 }
-                Optional<String> result = textInputDialog.showAndWait();
-
+                    input.setText(json.get("teamCode").toString());
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+            Optional<String> result = textInputDialog.showAndWait();
+
         });
 
         join.setOnAction(new EventHandler<ActionEvent>() {
