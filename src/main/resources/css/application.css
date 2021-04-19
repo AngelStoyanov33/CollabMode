@@ -36,6 +36,7 @@
 	-fx-padding: 0.333333em 1em 0.333333em 1em;
 	-fx-translate-y: 0px;
 }
+
 .jfxCheckBox{
 	-fx-border-color: #33364d;
     -fx-prompt-text-fill: #33364d;
@@ -54,4 +55,50 @@
     -fx-background-insets: 0,1,2,0;
     -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.6) , 5, 0.0 , 0 , 1 );
     -fx-padding: 10 20 10 20;
+}
+
+.jfx-tab-pane .tab-header-area .control-buttons-tab .tab-down-button{
+    -fx-background-color: #ffffff;
+}
+/* Modify the background color of the Pane area of TabPane */
+.tab-pane {
+    -fx-background-color: white;
+}
+.tab-background{
+    -fx-background-color: white;
+}
+/* Modify the background color of Tab */
+.tab {
+   -fx-background-color: white;
+   -fx-text-fill: black;
+}
+/* Modify the background color of the top bar */
+.tab-pane>*.tab-header-area>*.tab-header-background
+{
+    -fx-background-color: -fx-outer-border, -fx-text-box-border, #333333;
+}
+/* Modify the color of the text in the tab */
+.tab-label {
+    -fx-text-fill: #e6e6e6;
+}
+/* Child selector, select the child element tab-label when Tab is selected */
+.tab:selected .tab-label {
+    -fx-text-fill: #003333ff;
+}
+/* Set the background color when the tab is selected */
+.tab:selected {
+    -fx-background-color: white;
+    -fx-text-fill: black;
+    -fx-font-weight: bold;
+}
+/* When Tab is selected, select its border and modify the style */
+.tab-pane:focused > .tab-header-area > .headers-region > .tab:selected .focus-indicator {
+    -fx-border-radius: 0px;
+    -fx-border-width: 1px 1px 1px 1px;
+    -fx-border-color: #4d1a4dff;
+}
+
+/* added from me */
+.choice-box .label {
+    -fx-text-fill: black;
 }

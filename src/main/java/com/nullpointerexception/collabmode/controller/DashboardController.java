@@ -1,6 +1,5 @@
 package com.nullpointerexception.collabmode.controller;
 
-import com.jfoenix.controls.JFXTextArea;
 import com.jfoenix.controls.JFXTreeView;
 import com.nullpointerexception.collabmode.application.Main;
 import com.nullpointerexception.collabmode.model.User;
@@ -9,12 +8,13 @@ import com.nullpointerexception.collabmode.service.HTTPRequestManager;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -33,16 +33,13 @@ import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.reactfx.Subscription;
 import org.reactfx.collection.ListModification;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -61,6 +58,22 @@ public class DashboardController {
             "return", "short", "static", "strictfp", "super",
             "switch", "synchronized", "this", "throw", "throws",
             "transient", "try", "void", "volatile", "while"
+    };
+
+    private static final String[] KEYWORDS_CPP = new String[]{
+            "asm", "auto", "bool", "break", "case", "catch",
+            "char", "class", "const", "const_char", "continue",
+            "default", "delete", "do", "double", "dynamic_cast",
+            "else", "enum", "explicit", "export", "extern", "false",
+            "float", "for", "friend", "goto", "if", "inline", "int",
+            "long", "mutable", "namespace", "new", "operator",
+            "private", "protected", "public", "register", "reinterpret_cast",
+            "return", "short", "signed", "sizeof", "static", "static_cast",
+            "struct", "switch", "template", "this", "throw", "true",
+            "try", "typedef", "typeid", "typename", "union", "unsigned",
+            "using", "virtual", "void", "volatile", "wchar_t", "while",
+            "And", "bitor", "not_eq", "xor", "and_eq", "compl", "or",
+            "xor_eq", "bitand", "not", "or_eq"
     };
 
     private static final String KEYWORD_PATTERN = "\\b(" + String.join("|", KEYWORDS) + ")\\b";
@@ -89,6 +102,7 @@ public class DashboardController {
     private static FTPManager ftpManager;
     private static File currentFile = null;
     private static String currentFileLocationOnFTP = "";
+    private static String mode = "Java";
 
     private static Stage stage;
 
@@ -98,6 +112,8 @@ public class DashboardController {
 
     @FXML private AnchorPane anchorPaneArea;
 
+    @FXML private ChoiceBox<String> choiceBox;
+    @FXML private TabPane tabPane;
     @FXML private Menu collaborateMenu;
     @FXML private MenuItem addTeam;
     @FXML private Menu myTeamMenu;
@@ -183,7 +199,7 @@ public class DashboardController {
                             return;
                         }
                         fetchUserDetails();
-                        Main.openDashboardStage(token);
+                        Main.openDashboardStage(token, "Java");
                     }catch (IOException e){
                         e.printStackTrace();
                     }
@@ -199,6 +215,11 @@ public class DashboardController {
         anchorPaneArea.setRightAnchor(sp, 0.0);
         anchorPaneArea.setBottomAnchor(sp, 0.0);
         anchorPaneArea.setTopAnchor(sp, 0.0);
+
+        choiceBox.getItems().add("Java");
+        choiceBox.setValue("Java");
+        choiceBox.getItems().add("C++");
+
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
         codeArea.setContextMenu( new DefaultContextMenu() );
         codeArea.getVisibleParagraphs().addModificationObserver
@@ -266,6 +287,12 @@ public class DashboardController {
         });
 
         load.setOnAction(event -> {
+            Tab tab = new Tab();
+            tab.setText(getPathOfItem());
+            tabPane.getTabs().add(tab);
+            tabPane.getSelectionModel().select(tabPane.getTabs().size() - 1);
+            //TODO: Listener onclick tab (on select)
+
             String path = getPathOfItem();
             System.out.println(path);
             ftpManager.downloadFile(path);
@@ -397,7 +424,7 @@ public class DashboardController {
                             return;
                         }
                         fetchUserDetails();
-                        Main.openDashboardStage(token);
+                        Main.openDashboardStage(token, "Java");
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -459,7 +486,7 @@ public class DashboardController {
                         return;
                     }
                     fetchUserDetails();
-                    Main.openDashboardStage(token);
+                    Main.openDashboardStage(token, "Java");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -568,12 +595,20 @@ public class DashboardController {
 
 
     public TreeItem<String> getNodesForDirectory(FTPFile dir){
-        TreeItem<String> root = new TreeItem<>(dir.getName());
+        TreeItem<String> root = new TreeItem<>(dir.getName(), new ImageView(new Image("/assets/folder_icon.png")));
         for (FTPFile f : ftpManager.getFilesByPath(dir.getName())) {
             if (f.isDirectory()) {
                 root.getChildren().add(getNodesForDirectory(f));
             } else {
-                root.getChildren().add(new TreeItem<String>(f.getName()));
+                if(FilenameUtils.getExtension(f.getName()).equals("java")) {
+                    root.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/Java-icon.png"))));
+                }else if(FilenameUtils.getExtension(f.getName()).equals("c")){
+                    root.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/c-programming.png"))));
+                }else if(FilenameUtils.getExtension(f.getName()).equals("py")){
+                    root.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/python_icon.png"))));
+                }else {
+                    root.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/file_icon.png"))));
+                }
             }
         }
         return root;
@@ -595,15 +630,23 @@ public class DashboardController {
     public void loadFTPTree(){
         FTPFile[] files = ftpManager.getFiles();
 
-        TreeItem<String> item = new TreeItem<String>("File tree");
+        TreeItem<String> item = new TreeItem<String>("File tree", new ImageView(new Image("/assets/tree_icon.png")));
         treeView.setRoot(item);
         item.setExpanded(true);
 
         for (FTPFile f : files) {
             if (f.isDirectory()) {
                 item.getChildren().add(getNodesForDirectory(f));
-            } else {
-                item.getChildren().add(new TreeItem<String>(f.getName()));
+            }else {
+                if(FilenameUtils.getExtension(f.getName()).equals("java")) {
+                    item.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/Java-icon.png"))));
+                }else if(FilenameUtils.getExtension(f.getName()).equals("c")){
+                    item.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/c-programming.png"))));
+                }else if(FilenameUtils.getExtension(f.getName()).equals("py")){
+                    item.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/python_icon.png"))));
+                }else {
+                    item.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/file_icon.png"))));
+                }
             }
         }
     }
@@ -662,8 +705,7 @@ public class DashboardController {
         }
     }
 
-    private class DefaultContextMenu extends ContextMenu
-    {
+    private class DefaultContextMenu extends ContextMenu {
         private MenuItem fold, unfold, copy, paste, cut, undo, redo;
 
         public DefaultContextMenu()
@@ -745,6 +787,10 @@ public class DashboardController {
                 ((CodeArea) getOwnerNode()).redo();
             }
         }
+    }
+
+    public static void setMode(String mode){
+        DashboardController.mode = mode;
     }
 }
 

@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.jfoenix.controls.JFXTabPane?>
+<?import com.jfoenix.controls.JFXTextArea?>
 <?import com.jfoenix.controls.JFXTreeView?>
+<?import javafx.scene.control.ChoiceBox?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.Tab?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
-<?import org.fxmisc.richtext.CodeArea?>
 
-<BorderPane xmlns="http://javafx.com/javafx/8.0.172" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nullpointerexception.collabmode.controller.DashboardController">
+<?import org.fxmisc.richtext.CodeArea?>
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nullpointerexception.collabmode.controller.DashboardController">
    <top>
       <AnchorPane prefHeight="720.0" prefWidth="900.0" BorderPane.alignment="CENTER">
          <children>
@@ -44,10 +48,28 @@
                   </Menu>
               </menus>
             </MenuBar>
-            <JFXTreeView fx:id="treeView" layoutY="27.0" prefHeight="693.0" prefWidth="248.0" />
-       <AnchorPane fx:id = "anchorPaneArea" layoutX="248.0" layoutY="27.0" prefHeight="693.0" prefWidth="652.0">
+            <JFXTreeView fx:id="treeView" layoutY="27.0" prefHeight="662.0" prefWidth="248.0" />
+       <AnchorPane layoutX="248.0" layoutY="27.0" prefHeight="693.0" prefWidth="652.0" stylesheets="@../css/application.css">
            <children>
-            <CodeArea fx:id="codeArea" layoutX="0" layoutY="0" prefHeight="693.0" prefWidth="652.0" />
+                  <ChoiceBox fx:id="choiceBox" layoutX="502.0" layoutY="667.0" prefWidth="150.0" />
+                  <JFXTabPane fx:id="tabPane" prefHeight="34.0" prefWidth="652.0">
+                     <tabs>
+                        <Tab text="Untitled Tab">
+                          <content>
+                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                          </content>
+                        </Tab>
+                        <Tab text="Untitled Tab">
+                          <content>
+                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                          </content>
+                        </Tab>
+                     </tabs></JFXTabPane>
+                  <AnchorPane fx:id="anchorPaneArea" layoutY="36.0" prefHeight="620.0" prefWidth="652.0">
+                     <children>
+                     <CodeArea fx:id="codeArea" layoutY="3.0" prefHeight="621.0" prefWidth="652.0" />
+                     </children>
+                  </AnchorPane>
            </children></AnchorPane>
          </children></AnchorPane>
    </top>
