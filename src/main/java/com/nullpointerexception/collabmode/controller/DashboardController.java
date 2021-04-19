@@ -389,8 +389,11 @@ public class DashboardController {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                String path = getPathOfItem();
                 String itemToBeUploaded = newItem.getAbsolutePath();
-                ftpManager.uploadFile(itemToBeUploaded); // TODO: error check
+                System.out.println(path);
+                System.out.println(itemToBeUploaded);
+                ftpManager.uploadFile(itemToBeUploaded, path); // TODO: error check
 
                 newItem.delete();
 
@@ -584,7 +587,7 @@ public class DashboardController {
                                     e.printStackTrace();
                                 }
                                 ftpManager.deleteFile(currentFileLocationOnFTP);
-                                ftpManager.uploadFile(currentFile.getAbsolutePath());
+                                ftpManager.uploadFile(currentFile.getAbsolutePath(), currentFileLocationOnFTP.substring(0, currentFileLocationOnFTP.lastIndexOf('/')));
                             }
                         }
                     }

@@ -104,7 +104,7 @@ public class FTPManager {
         return false;
     }
 
-    public boolean uploadFile(String pathname){
+    public boolean uploadFile(String pathname, String pathOnServer){
         boolean uploaded;
         if(ftpClient != null){
             try {
@@ -120,7 +120,8 @@ public class FTPManager {
                 }
 
                 InputStream inputStream = new FileInputStream(uploadFile);
-
+                uploadedFile = pathOnServer + "/" + uploadedFile;
+                System.out.println(pathOnServer + "/" + uploadedFile);
                 System.out.println("Start uploading first file");
                 uploaded = ftpClient.storeFile(uploadedFile, inputStream);
                 inputStream.close();
