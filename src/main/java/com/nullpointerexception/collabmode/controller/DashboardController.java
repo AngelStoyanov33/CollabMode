@@ -150,6 +150,7 @@ public class DashboardController {
 
         if(currentUser.getTeamID() != 0 && currentUser.isTeamOwner()) {
             MenuItem transferOwnerItem = new MenuItem();
+            MenuItem kickTeammates = new MenuItem();
             transferOwnerItem.setText("Transfer ownership");
             transferOwnerItem.setOnAction(event -> {
                 ArrayList<User> users = null;
@@ -208,7 +209,69 @@ public class DashboardController {
                     }
                 }
             });
+
+            kickTeammates.setText("Kick");
+            kickTeammates.setOnAction(event -> {
+                ArrayList<User> users = null;
+                List<String> choices = new ArrayList<>();
+                try {
+                    users = fetchUsersByTeamID(currentUser.getTeamID());
+                    if(users == null){
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Kick error");
+                        alert.setContentText("You're not currently in team!");
+                        alert.showAndWait();
+                        return;
+                    }
+                    for(User user : users){
+                        if(user.getId() != currentUser.getId()) {
+                            choices.add(user.getFullName());
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                ChoiceDialog<String> dialog = new ChoiceDialog<>(choices.get(0), choices);
+                dialog.setTitle("Kick a teammate");
+                dialog.setHeaderText("Kick a team member from the team");
+                dialog.setContentText("Kick:");
+
+                Optional<String> result = dialog.showAndWait();
+                if (result.isPresent()){
+                    try {
+                        System.out.println("Your choice: " + result.get());
+                        HTTPRequestManager httpRequestManager = new HTTPRequestManager();
+                        JSONObject json = new JSONObject();
+                        int kickedMemberID = 0;
+                        json.put("token", token);
+                        for(User user : users){
+                            if(user.getFullName().equals(result.get())) {
+                                kickedMemberID = user.getId();
+                                break;
+                            }
+                        }
+                        json.put("kickedMemberID", kickedMemberID);
+                        String response = httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/kick", json.toString());
+                        json = new JSONObject(response);
+                        if (!json.get("status").toString().equals("ok")) {
+                            Alert alert = new Alert(Alert.AlertType.ERROR);
+                            alert.setTitle("Kick error");
+                            alert.setContentText(json.get("errorMessage").toString());
+                            alert.showAndWait();
+                            return;
+                        }
+                        fetchUserDetails();
+                        Main.openDashboardStage(token, mode);
+                    }catch (IOException e){
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+
             myTeamMenu.getItems().add(transferOwnerItem);
+            myTeamMenu.getItems().add(kickTeammates);
         }
 
         VirtualizedScrollPane sp = new VirtualizedScrollPane(codeArea);
