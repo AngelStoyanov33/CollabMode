@@ -54,16 +54,6 @@
                   <ChoiceBox fx:id="choiceBox" layoutX="502.0" layoutY="667.0" prefWidth="150.0" />
                   <JFXTabPane fx:id="tabPane" prefHeight="34.0" prefWidth="652.0">
                      <tabs>
-                        <Tab text="Untitled Tab">
-                          <content>
-                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-                          </content>
-                        </Tab>
-                        <Tab text="Untitled Tab">
-                          <content>
-                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-                          </content>
-                        </Tab>
                      </tabs></JFXTabPane>
                   <AnchorPane fx:id="anchorPaneArea" layoutY="36.0" prefHeight="620.0" prefWidth="652.0">
                      <children>
