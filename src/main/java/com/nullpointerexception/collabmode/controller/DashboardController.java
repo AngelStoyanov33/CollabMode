@@ -5,6 +5,7 @@ import com.nullpointerexception.collabmode.application.Main;
 import com.nullpointerexception.collabmode.model.User;
 import com.nullpointerexception.collabmode.service.FTPManager;
 import com.nullpointerexception.collabmode.service.HTTPRequestManager;
+import com.nullpointerexception.collabmode.service.MQTTManager;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -26,6 +27,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.net.ftp.FTPFile;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.fxmisc.flowless.VirtualizedScrollPane;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.GenericStyledArea;
@@ -47,6 +49,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class DashboardController {
 
@@ -161,9 +164,17 @@ public class DashboardController {
             myTeamMenu.getItems().add(leaveTeamItem);
 
         }
+        new Thread(() -> {
+            MQTTManager mqttManager = new MQTTManager("developmentID");
+            try {
+                mqttManager.subscribe("test/topic");
+                mqttManager.publish("test/topic", "hellow");
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
+        }).start();
 
         loadHighlight(mode);
-
 
         if(currentUser.getTeamID() != 0 && currentUser.isTeamOwner()) {
             MenuItem transferOwnerItem = new MenuItem();
@@ -323,6 +334,19 @@ public class DashboardController {
         anchorPaneArea.setRightAnchor(sp, 0.0);
         anchorPaneArea.setBottomAnchor(sp, 0.0);
         anchorPaneArea.setTopAnchor(sp, 0.0);
+
+
+        codeArea.richChanges()
+                .filter(change -> !change.isIdentity())
+                .successionEnds(java.time.Duration.ofMillis(500))
+                .subscribe(ignore -> {
+                    if(tabPane.getTabs().size() != 0) {
+                        System.out.println("CHANGE DETECTED");
+
+                    }
+                });
+
+
 
         choiceBox.getItems().add("Java");
         choiceBox.getItems().add("C++");
