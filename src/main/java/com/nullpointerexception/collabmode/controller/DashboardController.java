@@ -357,18 +357,17 @@ public class DashboardController {
                     System.out.println(newValue);
                     if(newValue.equals("Java")){
                         setMode(newValue);
-                        try {
-                            Main.openDashboardStage(token, mode);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        loadHighlight("Java");
+                        String codeAreaContentCopy = codeArea.getText();
+                        codeArea.deleteText(0, codeArea.getLength());
+                        codeArea.appendText(codeAreaContentCopy);
                     }else if(newValue.equals("C++")){
                         setMode(newValue);
-                        try {
-                            Main.openDashboardStage(token, mode);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        loadHighlight("C++");
+                        String codeAreaContentCopy = codeArea.getText();
+                        codeArea.deleteText(0, codeArea.getLength());
+                        codeArea.appendText(codeAreaContentCopy);
+
                     }
                 });
 
