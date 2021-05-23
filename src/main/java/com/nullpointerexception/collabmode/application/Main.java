@@ -30,6 +30,7 @@ public class Main extends Application {
         String tempFolder = System.getProperty("java.io.tmpdir");
         Files.createDirectories(Paths.get(tempFolder + "\\.collabmode"));
         Files.createDirectories(Paths.get(dataFolder + "\\CollabMode"));
+        Files.createDirectories(Paths.get(dataFolder + "\\CollabMode\\logs"));
         File authFile = new File(dataFolder + "\\CollabMode\\auth.ser");
         if(authFile.exists()){
             if(authFile.isFile()){

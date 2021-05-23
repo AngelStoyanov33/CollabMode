@@ -6,6 +6,7 @@ import com.nullpointerexception.collabmode.model.User;
 import com.nullpointerexception.collabmode.service.FTPManager;
 import com.nullpointerexception.collabmode.service.HTTPRequestManager;
 import com.nullpointerexception.collabmode.service.MQTTManager;
+import com.nullpointerexception.collabmode.util.Logger;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -114,6 +115,8 @@ public class DashboardController {
 
     @FXML
     public void initialize(){
+        Logger logger = new Logger();
+
         checkTokenValidity();
         try {
             fetchUserDetails();
