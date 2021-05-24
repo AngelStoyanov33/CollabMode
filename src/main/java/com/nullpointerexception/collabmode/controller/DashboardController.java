@@ -496,7 +496,25 @@ public class DashboardController {
                     sc.close();
                 }
             }
+			
+			String fileExtension = FilenameUtils.getExtension(path);
+            if(fileExtension.equals("java")){
+                setMode("Java");
+                loadHighlight("Java");
+                String codeAreaContentCopy = codeArea.getText();
+                codeArea.deleteText(0, codeArea.getLength());
+                codeArea.appendText(codeAreaContentCopy);
+                choiceBox.setValue("Java");
+            }else if(fileExtension.equals("cpp") || fileExtension.equals("cc")){
+                setMode("C++");
+                loadHighlight("C++");
+                String codeAreaContentCopy = codeArea.getText();
+                codeArea.deleteText(0, codeArea.getLength());
+                codeArea.appendText(codeAreaContentCopy);
+                choiceBox.setValue("C++");
 
+            }
+			
             loadFTPTree();
         });
 
