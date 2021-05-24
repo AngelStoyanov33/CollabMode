@@ -5,6 +5,7 @@ public class User {
     private String fullName;
     private String email;
     private int teamID;
+    private String teamCode;
     private boolean isTeamOwner;
 
     public User(int id, String fullName, String email, int teamID, boolean isTeamOwner) {
@@ -53,5 +54,13 @@ public class User {
 
     public void setTeamOwner(boolean teamOwner) {
         isTeamOwner = teamOwner;
+    }
+
+    public String getTeamCode() {
+        return teamCode;
+    }
+
+    public void setTeamCode(String teamCode) {
+        this.teamCode = teamCode;
     }
 }

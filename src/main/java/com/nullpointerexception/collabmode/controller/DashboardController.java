@@ -96,6 +96,8 @@ public class DashboardController {
     private static String currentFileLocationOnFTP = "";
     private static String mode = "Java";
 
+    private static Thread mqttThread;
+
     private static Stage stage;
 
     @FXML private JFXTreeView<String> treeView;
@@ -145,15 +147,17 @@ public class DashboardController {
                 e.printStackTrace();
             }
             final String teamCode = json.get("teamCode").toString();
-            new Thread(() -> {
-                MQTTManager mqttManager = new MQTTManager(currentUser.getId() + "", this);
+            currentUser.setTeamCode(teamCode);
+            mqttThread = new Thread(() -> {
+                MQTTManager mqttManager = new MQTTManager(currentUser, this);
                 try {
                     MQTTManager.subscribe("teams/"+ teamCode + "/changes/sync");
                     MQTTManager.publish("teams/"+ teamCode + "/changes/sync", "test message");
                 } catch (MqttException e) {
                     e.printStackTrace();
                 }
-            }).start();
+            });
+            mqttThread.start();
 
             loadFTPTree();
 
@@ -355,7 +359,12 @@ public class DashboardController {
                 .successionEnds(java.time.Duration.ofMillis(500))
                 .subscribe(ignore -> {
                     if(tabPane.getTabs().size() != 0) {
-                        System.out.println("CHANGE DETECTED");
+                        try {
+                            MQTTManager.publish("teams/"+ currentUser.getTeamCode() + "/changes/sync",
+                                    "Change detected on file: " + currentFileLocationOnFTP);
+                        } catch (MqttException e) {
+                            e.printStackTrace();
+                        }
 
                     }
                 });
@@ -1031,6 +1040,10 @@ public class DashboardController {
 
     public static void setMode(String mode){
         DashboardController.mode = mode;
+    }
+
+    public static Thread getMqttThread() {
+        return mqttThread;
     }
 
     public static void loadHighlight(String mode){
