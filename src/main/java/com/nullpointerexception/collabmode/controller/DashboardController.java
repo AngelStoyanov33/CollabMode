@@ -26,6 +26,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.net.ftp.FTPFile;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -134,6 +135,26 @@ public class DashboardController {
                 e.printStackTrace();
             }
             ftpManager = new FTPManager(FTPManager.FTP_SERVER_ADDRESS, 21, json.get("teamName").toString(), "");
+
+            json = new JSONObject();
+            json.put("token", token);
+            try {
+                String response = httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/sendInvite", json.toString());
+                json = new JSONObject(response);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            final String teamCode = json.get("teamCode").toString();
+            new Thread(() -> {
+                MQTTManager mqttManager = new MQTTManager(currentUser.getId() + "", this);
+                try {
+                    MQTTManager.subscribe("teams/"+ teamCode + "/changes/sync");
+                    MQTTManager.publish("teams/"+ teamCode + "/changes/sync", "test message");
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+            }).start();
+
             loadFTPTree();
 
             MenuItem leaveTeamItem = new MenuItem();
@@ -167,16 +188,6 @@ public class DashboardController {
             myTeamMenu.getItems().add(leaveTeamItem);
 
         }
-        new Thread(() -> {
-            MQTTManager mqttManager = new MQTTManager("developmentID");
-            try {
-                mqttManager.subscribe("test/topic");
-                mqttManager.publish("test/topic", "hellow");
-            } catch (MqttException e) {
-                e.printStackTrace();
-            }
-        }).start();
-
         loadHighlight(mode);
 
         if(currentUser.getTeamID() != 0 && currentUser.isTeamOwner()) {

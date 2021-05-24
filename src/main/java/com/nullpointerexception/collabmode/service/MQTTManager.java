@@ -1,5 +1,6 @@
 package com.nullpointerexception.collabmode.service;
 
+import com.nullpointerexception.collabmode.controller.DashboardController;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -21,9 +22,10 @@ public class MQTTManager {
 
         public void messageArrived(String topic, MqttMessage message) throws Exception {
             // The messages obtained after subscribe will be executed here
-            System.out.println("Received message topic:" + topic);
-            System.out.println("Received message Qos:" + message.getQos());
-            System.out.println("Received message content:" + new String(message.getPayload()));
+
+            System.out.println("Received message topic: " + topic);
+            System.out.println("Received message Qos: " + message.getQos());
+            System.out.println("Received message content: " + new String(message.getPayload()));
         }
 
         public void deliveryComplete(IMqttDeliveryToken token) {
@@ -32,14 +34,17 @@ public class MQTTManager {
     }
 
 
-
+    private DashboardController dashboardRef;
+    private static String currentClientId;
     private static String broker = "tcp://192.168.0.106:1883";
     private static MemoryPersistence memoryPersistence;
 
     private static MqttClient mqttClient;
 
-    public MQTTManager(String clientID){
+    public MQTTManager(String clientID, DashboardController dashboardRef){
+        this.dashboardRef = dashboardRef;
         memoryPersistence = new MemoryPersistence();
+        currentClientId = clientID;
         try {
             mqttClient = new MqttClient(broker, clientID, memoryPersistence);
             MqttConnectOptions connectOptions = new MqttConnectOptions();
@@ -64,11 +69,13 @@ public class MQTTManager {
         }
     }
 
-    public void subscribe(String topic) throws MqttException {
+    public static void subscribe(String topic) throws MqttException {
         mqttClient.subscribe(topic);
     }
 
-    public void publish(String topic, String message) throws MqttException {
+    public static void publish(String topic, String message) throws MqttException {
+        String prefix = String.format("[%s] ", currentClientId);
+        message = prefix + message;
         mqttClient.publish(topic, new MqttMessage(message.getBytes(StandardCharsets.UTF_8)));
     }
 
