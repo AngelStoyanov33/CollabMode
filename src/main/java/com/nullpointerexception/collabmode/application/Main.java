@@ -2,6 +2,7 @@ package com.nullpointerexception.collabmode.application;
 
 import com.nullpointerexception.collabmode.controller.DashboardController;
 import com.nullpointerexception.collabmode.service.HTTPRequestManager;
+import com.nullpointerexception.collabmode.service.MQTTManager;
 import com.nullpointerexception.collabmode.service.Serializer;
 import com.sun.deploy.uitoolkit.impl.fx.HostServicesFactory;
 import com.sun.javafx.application.HostServicesDelegate;
@@ -54,6 +55,18 @@ public class Main extends Application {
             }
         }else{
             Main.openRegisterStage();
+        }
+    }
+
+    @Override
+    public void stop() throws Exception {
+        super.stop();
+        if(DashboardController.getMqttThread() != null){
+            if(MQTTManager.getMqttClient() != null){
+                MQTTManager.getMqttClient().disconnectForcibly();
+            }
+            DashboardController.getMqttThread().interrupt();
+            System.exit(0);
         }
     }
 
