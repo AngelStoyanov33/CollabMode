@@ -17,16 +17,34 @@ public class MQTTManager {
 
     private class OnMessageCallback implements MqttCallback {
         public void connectionLost(Throwable cause) {
-            // After the connection is lost, it usually reconnects here
-            System.out.println("disconnect，you can reconnect");
+            System.out.println("[MQTT] Disconnected");
+            cause.printStackTrace();
+            try {
+                mqttClient.reconnect();
+            } catch (MqttException e) {
+                e.printStackTrace();
+            }
         }
 
         public void messageArrived(String topic, MqttMessage message) throws Exception {
-            // The messages obtained after subscribe will be executed here
+            String messageString = new String(message.getPayload());
 
-            System.out.println("Received message topic: " + topic);
-            System.out.println("Received message Qos: " + message.getQos());
-            System.out.println("Received message content: " + new String(message.getPayload()));
+            System.out.println("----------------------------------------------");
+            System.out.println("Message arrived @  " + topic);
+            System.out.println("QoS: " + message.getQos());
+            System.out.println("Content: " + messageString);
+            System.out.println("----------------------------------------------");
+
+            if (messageString.contains("Change detected on file")) {
+                    if (Integer.parseInt(messageString.charAt(1) + "") == currentUserRef.getId()) { //The user is the one making the change
+                        dashboardRef.forceSave();
+                    } else {    //The user is the one loading the change
+                        Thread.sleep(1000);
+                        dashboardRef.forceLoad();
+                    }
+
+                }
+
         }
 
         public void deliveryComplete(IMqttDeliveryToken token) {
@@ -35,7 +53,7 @@ public class MQTTManager {
     }
 
 
-    private DashboardController dashboardRef;
+    private final DashboardController dashboardRef;
     private static User currentUserRef;
     private static String broker = "tcp://192.168.0.101:1883";
     private static MemoryPersistence memoryPersistence;

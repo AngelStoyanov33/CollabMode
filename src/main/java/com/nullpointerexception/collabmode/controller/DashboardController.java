@@ -47,6 +47,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -97,6 +98,9 @@ public class DashboardController {
     private static String mode = "Java";
 
     private static Thread mqttThread;
+
+    public volatile Boolean triggerChange = true;
+    public volatile ReentrantLock lock = new ReentrantLock();
 
     private static Stage stage;
 
@@ -152,7 +156,6 @@ public class DashboardController {
                 MQTTManager mqttManager = new MQTTManager(currentUser, this);
                 try {
                     MQTTManager.subscribe("teams/"+ teamCode + "/changes/sync");
-                    MQTTManager.publish("teams/"+ teamCode + "/changes/sync", "test message");
                 } catch (MqttException e) {
                     e.printStackTrace();
                 }
@@ -360,8 +363,12 @@ public class DashboardController {
                 .subscribe(ignore -> {
                     if(tabPane.getTabs().size() != 0) {
                         try {
-                            MQTTManager.publish("teams/"+ currentUser.getTeamCode() + "/changes/sync",
-                                    "Change detected on file: " + currentFileLocationOnFTP);
+                            if(!lock.isLocked()) {
+                                MQTTManager.publish("teams/" + currentUser.getTeamCode() + "/changes/sync",
+                                        "Change detected on file: " + currentFileLocationOnFTP);
+                            }else{
+                                lock.unlock();
+                            }
                         } catch (MqttException e) {
                             e.printStackTrace();
                         }
@@ -369,27 +376,29 @@ public class DashboardController {
                     }
                 });
 
-
-
         choiceBox.getItems().add("Java");
         choiceBox.getItems().add("C++");
         choiceBox.setValue(mode);
         choiceBox.getSelectionModel()
                 .selectedItemProperty()
                 .addListener( (ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
-                    System.out.println(newValue);
-                    if(newValue.equals("Java")){
-                        setMode(newValue);
-                        loadHighlight("Java");
-                        String codeAreaContentCopy = codeArea.getText();
-                        codeArea.deleteText(0, codeArea.getLength());
-                        codeArea.appendText(codeAreaContentCopy);
-                    }else if(newValue.equals("C++")){
-                        setMode(newValue);
-                        loadHighlight("C++");
-                        String codeAreaContentCopy = codeArea.getText();
-                        codeArea.deleteText(0, codeArea.getLength());
-                        codeArea.appendText(codeAreaContentCopy);
+                    lock.lock();
+                    try {
+                        if (newValue.equals("Java")) {
+                            setMode(newValue);
+                            loadHighlight("Java");
+                            String codeAreaContentCopy = codeArea.getText();
+                            codeArea.deleteText(0, codeArea.getLength());
+                            codeArea.appendText(codeAreaContentCopy);
+                        } else if (newValue.equals("C++")) {
+                            setMode(newValue);
+                            loadHighlight("C++");
+                            String codeAreaContentCopy = codeArea.getText();
+                            codeArea.deleteText(0, codeArea.getLength());
+                            codeArea.appendText(codeAreaContentCopy);
+
+                        }
+                    }finally {
 
                     }
                 });
@@ -461,70 +470,77 @@ public class DashboardController {
         });
 
         load.setOnAction(event -> {
-            Tab tab = new Tab();
-            tab.setText(getPathOfItem());
-            tab.setClosable(true);
-            tabPane.getTabs().add(tab);
-            tabPane.getSelectionModel().select(tabPane.getTabs().size() - 1);
-            tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.ALL_TABS);
-            //TODO: Listener onclick tab (on select)
-
-            String path = getPathOfItem();
-            System.out.println(path);
-            ftpManager.downloadFile(path);
-            String tempFolder = System.getProperty("java.io.tmpdir");
-            Path tempFolderPath = Paths.get(tempFolder + "\\.collabmode");
-            File downloadedFile = new File(tempFolderPath.toString() + "\\" + Paths.get(path).getFileName());
-            FileInputStream inputStream = null;
-            Scanner sc = null;
-            currentFile = downloadedFile;
-            currentFileLocationOnFTP = path;
+            lock.lock();
             try {
-                inputStream = new FileInputStream(downloadedFile);
-                sc = new Scanner(inputStream, "UTF-8");
-                codeArea.deleteText(0, codeArea.getLength());
-                while (sc.hasNextLine()) {
-                    String line = sc.nextLine();
-                    codeArea.appendText(line);
-                    codeArea.appendText("\n");
-                }
-                if (sc.ioException() != null) {
-                    throw sc.ioException();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (inputStream != null) {
-                    try {
-                        inputStream.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                Tab tab = new Tab();
+                tab.setText(getPathOfItem());
+                tab.setClosable(true);
+                tabPane.getTabs().add(tab);
+                tabPane.getSelectionModel().select(tabPane.getTabs().size() - 1);
+                tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.ALL_TABS);
+                //TODO: Listener onclick tab (on select)
+
+                String path = getPathOfItem();
+                System.out.println(path);
+                ftpManager.downloadFile(path);
+                String tempFolder = System.getProperty("java.io.tmpdir");
+                Path tempFolderPath = Paths.get(tempFolder + "\\.collabmode");
+                File downloadedFile = new File(tempFolderPath.toString() + "\\" + Paths.get(path).getFileName());
+                FileInputStream inputStream = null;
+                Scanner sc = null;
+                currentFile = downloadedFile;
+                currentFileLocationOnFTP = path;
+                try {
+                    inputStream = new FileInputStream(downloadedFile);
+                    sc = new Scanner(inputStream, "UTF-8");
+                    codeArea.deleteText(0, codeArea.getLength());
+                    while (sc.hasNextLine()) {
+                        String line = sc.nextLine();
+                        codeArea.appendText(line);
+                        codeArea.appendText("\n");
+                    }
+                    if (sc.ioException() != null) {
+                        throw sc.ioException();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (inputStream != null) {
+                        try {
+                            inputStream.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if (sc != null) {
+                        sc.close();
                     }
                 }
-                if (sc != null) {
-                    sc.close();
+
+                String fileExtension = FilenameUtils.getExtension(path);
+                if (fileExtension.equals("java")) {
+                    setMode("Java");
+                    loadHighlight("Java");
+                    String codeAreaContentCopy = codeArea.getText();
+                    codeArea.deleteText(0, codeArea.getLength());
+                    codeArea.appendText(codeAreaContentCopy);
+                    choiceBox.setValue("Java");
+                } else if (fileExtension.equals("cpp") || fileExtension.equals("cc")) {
+                    setMode("C++");
+                    loadHighlight("C++");
+                    String codeAreaContentCopy = codeArea.getText();
+                    codeArea.deleteText(0, codeArea.getLength());
+                    codeArea.appendText(codeAreaContentCopy);
+                    choiceBox.setValue("C++");
+
                 }
-            }
-			
-			String fileExtension = FilenameUtils.getExtension(path);
-            if(fileExtension.equals("java")){
-                setMode("Java");
-                loadHighlight("Java");
-                String codeAreaContentCopy = codeArea.getText();
-                codeArea.deleteText(0, codeArea.getLength());
-                codeArea.appendText(codeAreaContentCopy);
-                choiceBox.setValue("Java");
-            }else if(fileExtension.equals("cpp") || fileExtension.equals("cc")){
-                setMode("C++");
-                loadHighlight("C++");
-                String codeAreaContentCopy = codeArea.getText();
-                codeArea.deleteText(0, codeArea.getLength());
-                codeArea.appendText(codeAreaContentCopy);
-                choiceBox.setValue("C++");
+                loadFTPTree();
+            }finally {
 
             }
-			
-            loadFTPTree();
+
+
+
         });
 
         addNewDirectory.setOnAction(event -> {
@@ -769,7 +785,6 @@ public class DashboardController {
                             if(ftpManager != null) {
                                 PrintWriter writer = null;
                                 try {
-                                    System.out.println("Here");
                                     writer = new PrintWriter(currentFile.getAbsolutePath(), "UTF-8");
                                     writer.print(codeArea.getText());
                                     writer.close();
@@ -899,6 +914,81 @@ public class DashboardController {
             }
         }
     }
+
+    public void forceSave(){
+        lock.lock();
+        try {
+            if (currentFile != null) {
+                if (ftpManager != null) {
+                    PrintWriter writer = null;
+                    try {
+                        writer = new PrintWriter(currentFile.getAbsolutePath(), "UTF-8");
+                        writer.print(codeArea.getText());
+                        writer.close();
+                    } catch (FileNotFoundException | UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+
+                    ftpManager.deleteFile(currentFileLocationOnFTP);
+                    ftpManager.uploadFile(currentFile.getAbsolutePath(), currentFileLocationOnFTP.substring(0, currentFileLocationOnFTP.lastIndexOf('/')));
+                }
+            }
+        }finally {
+            lock.unlock();
+        }
+    }
+
+    public void forceLoad(){
+        Platform.setImplicitExit(false);
+        Platform.runLater(() -> {
+            lock.lock();
+            try {
+                String path = currentFileLocationOnFTP;
+                System.out.println("Loading: " + path);
+                ftpManager.downloadFile(path);
+                String tempFolder = System.getProperty("java.io.tmpdir");
+                Path tempFolderPath = Paths.get(tempFolder + "\\.collabmode");
+                File downloadedFile = new File(tempFolderPath.toString() + "\\" + Paths.get(path).getFileName());
+                FileInputStream inputStream = null;
+                Scanner sc = null;
+                currentFile = downloadedFile;
+                currentFileLocationOnFTP = path;
+                try {
+                    inputStream = new FileInputStream(downloadedFile);
+                    sc = new Scanner(inputStream, "UTF-8");
+                    codeArea.deleteText(0, codeArea.getLength());
+                    while (sc.hasNextLine()) {
+                        String line = sc.nextLine();
+                        codeArea.appendText(line);
+                        codeArea.appendText("\n");
+                    }
+                    if (sc.ioException() != null) {
+                        throw sc.ioException();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    if (inputStream != null) {
+                        try {
+                            inputStream.close();
+                            if (downloadedFile.exists())
+                                downloadedFile.delete();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    if (sc != null) {
+                        sc.close();
+                    }
+                }
+            }finally {
+                //lock.unlock();
+            }
+        });
+
+
+    }
+
 
     private StyleSpans<Collection<String>> computeHighlighting(String text) {
         Matcher matcher = PATTERN.matcher(text);
