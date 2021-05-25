@@ -1,6 +1,7 @@
 package com.nullpointerexception.collabmode.service;
 
 import com.nullpointerexception.collabmode.controller.DashboardController;
+import com.nullpointerexception.collabmode.model.User;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -35,16 +36,17 @@ public class MQTTManager {
 
 
     private DashboardController dashboardRef;
-    private static String currentClientId;
-    private static String broker = "tcp://192.168.0.106:1883";
+    private static User currentUserRef;
+    private static String broker = "tcp://192.168.0.101:1883";
     private static MemoryPersistence memoryPersistence;
 
     private static MqttClient mqttClient;
 
-    public MQTTManager(String clientID, DashboardController dashboardRef){
+    public MQTTManager(User userRef, DashboardController dashboardRef){
         this.dashboardRef = dashboardRef;
         memoryPersistence = new MemoryPersistence();
-        currentClientId = clientID;
+        currentUserRef = userRef;
+        String clientID = currentUserRef.getId() + "";
         try {
             mqttClient = new MqttClient(broker, clientID, memoryPersistence);
             MqttConnectOptions connectOptions = new MqttConnectOptions();
@@ -74,7 +76,7 @@ public class MQTTManager {
     }
 
     public static void publish(String topic, String message) throws MqttException {
-        String prefix = String.format("[%s] ", currentClientId);
+        String prefix = String.format("[%s] ", currentUserRef.getId());
         message = prefix + message;
         mqttClient.publish(topic, new MqttMessage(message.getBytes(StandardCharsets.UTF_8)));
     }
