@@ -870,6 +870,8 @@ public class DashboardController {
                     root.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/c-programming.png"))));
                 }else if(FilenameUtils.getExtension(f.getName()).equals("py")){
                     root.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/python_icon.png"))));
+                }else if(FilenameUtils.getExtension(f.getName()).equals("cpp") || FilenameUtils.getExtension(f.getName()).equals("cc")){
+                    root.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/cplusplus.png"))));
                 }else {
                     root.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/file_icon.png"))));
                 }
@@ -908,6 +910,8 @@ public class DashboardController {
                     item.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/c-programming.png"))));
                 }else if(FilenameUtils.getExtension(f.getName()).equals("py")){
                     item.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/python_icon.png"))));
+                }else if(FilenameUtils.getExtension(f.getName()).equals("cpp") || FilenameUtils.getExtension(f.getName()).equals("cc")){
+                    item.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/cplusplus.png"))));
                 }else {
                     item.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/file_icon.png"))));
                 }
