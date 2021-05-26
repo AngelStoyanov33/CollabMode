@@ -10,6 +10,7 @@ import com.nullpointerexception.collabmode.util.Logger;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -24,6 +25,7 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
+import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import org.apache.commons.io.FileUtils;
@@ -379,7 +381,7 @@ public class DashboardController {
         choiceBox.getItems().add("Java");
         choiceBox.getItems().add("C++");
         choiceBox.setValue(mode);
-        choiceBox.getSelectionModel()
+choiceBox.getSelectionModel()
                 .selectedItemProperty()
                 .addListener( (ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
                     lock.lock();
@@ -399,21 +401,16 @@ public class DashboardController {
 
                         }
                     }finally {
-
+                        lock.unlock();
                     }
                 });
 
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
         codeArea.setContextMenu( new DefaultContextMenu() );
-        codeArea.getVisibleParagraphs().addModificationObserver
-                (
-                        new VisibleParagraphStyler<>( codeArea, this::computeHighlighting )
-                );
+        codeArea.getVisibleParagraphs().addModificationObserver(new VisibleParagraphStyler<>(codeArea, this::computeHighlighting));
 
-        // auto-indent: insert previous line's indents on enter
         final Pattern whiteSpace = Pattern.compile( "^\\s+" );
-        codeArea.addEventHandler( KeyEvent.KEY_PRESSED, KE ->
-        {
+        codeArea.addEventHandler( KeyEvent.KEY_PRESSED, KE ->{
             if ( KE.getCode() == KeyCode.ENTER ) {
                 int caretPosition = codeArea.getCaretPosition();
                 int currentParagraph = codeArea.getCurrentParagraph();
@@ -422,13 +419,69 @@ public class DashboardController {
             }
         });
 
-
-
         Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(2), ev -> {
             codeArea.replaceText(0, 0, codeArea.getText());
         }));
         timeline.play();
+		
+		final Popup[] popup = {new Popup()};
+        final ListView[] lop = {new ListView()};
 
+        codeArea.textProperty().addListener((observableValue, s, s2) -> {
+            lock.lock();
+            try {
+                String w = "", word = "";
+                for (int i = (int) codeArea.getAnchor() - 1; i > 0; i--) {
+                    if (!(codeArea.getText().charAt(i) == ' ') || !(codeArea.getText().charAt(i) == '\n')) {
+                        w += codeArea.getText().charAt(i);
+                    }else{
+                        break;
+                    }
+                }
+                for (int i = w.length() - 1; i >= 0; i--) {
+                    word += w.charAt(i);
+                }
+                if (!word.equals("")) {
+                    ArrayList<String> suggestions = new ArrayList<>();
+                    for (String keyword : KEYWORDS) {
+                        if (keyword.contains(word)) {
+                            suggestions.add(keyword);
+                        }
+                    }
+					
+                    popup[0].hide();
+                    lop[0] = new ListView();
+
+                    if (suggestions.size() > 0) {
+                        for (String suggestion : suggestions) {
+                            lop[0].getItems().add(suggestion);
+                        }
+                        popup[0] = new Popup();
+                        popup[0].getContent().removeAll(lop[0]);
+
+                        lop[0].setMaxHeight(80);
+                        popup[0].getContent().addAll(lop[0]);
+
+                        String finalWord = word;
+                        lop[0].getSelectionModel().selectedItemProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) -> {
+                            System.out.println("Selected item: " + newValue + " "+ codeArea.getCaretPosition());
+                            System.out.println(finalWord);
+                            codeArea.replaceText(codeArea.getText() + newValue);
+                        });
+
+                        popup[0].show(codeArea, codeArea.getCaretBounds().get().getMaxX(), codeArea.getCaretBounds().get().getMaxY());
+                        codeArea.requestFocus();
+                    }
+                    codeArea.requestFocus();
+                } else {
+                    if (popup[0] != null) {
+                        popup[0].hide();
+                    }
+                }
+            }finally {
+                lock.unlock();
+            }
+        });
 
         createProjectItem.setOnAction(event -> {
             TextInputDialog textInputDialog = new TextInputDialog();
@@ -534,13 +587,10 @@ public class DashboardController {
                     choiceBox.setValue("C++");
 
                 }
-                loadFTPTree();
             }finally {
 
             }
-
-
-
+                loadFTPTree();
         });
 
         addNewDirectory.setOnAction(event -> {
@@ -836,7 +886,6 @@ public class DashboardController {
                             Matcher match = word.matcher(text);
                             while (match.find()) {
                                 System.out.println("Found " + wordToFind + " at index "+ match.start() +" - "+ (match.end()-1));
-                                //codeArea.setStyle(0, match.start(), match.end()-1, Collections.singleton("-rtfx-background-color: red;"));
                                 codeArea.setStyleClass(match.start(), (match.end()), "test");
                             }
                         }
@@ -859,7 +908,6 @@ public class DashboardController {
                             Matcher match = word.matcher(text);
                             while (match.find()) {
                                 System.out.println("Found " + wordToFind + " at index "+ match.start() +" - "+ (match.end()-1));
-                                //codeArea.setStyle(0, match.start(), match.end()-1, Collections.singleton("-rtfx-background-color: red;"));
                                 codeArea.setStyleClass(match.start(), (match.end()), "test");
                             }
                         }
@@ -1032,7 +1080,7 @@ public class DashboardController {
                     }
                 }
             }finally {
-                //lock.unlock();
+
             }
         });
 
