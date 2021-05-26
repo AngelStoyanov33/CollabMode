@@ -820,6 +820,52 @@ public class DashboardController {
                     }
                 });
 
+                scene.getAccelerators().put(KeyCombination.keyCombination("CTRL+L"), new Runnable() {
+                    @Override
+                    public void run() {
+                        TextInputDialog textInputDialog = new TextInputDialog();
+                        textInputDialog.setTitle("Find definition");
+                        textInputDialog.getDialogPane().setContentText("Find");
+                        textInputDialog.getDialogPane().setHeaderText("Tell me definition to search for");
+                        Optional<String> result = textInputDialog.showAndWait();
+                        TextField input = textInputDialog.getEditor();
+                        if (input.getText() != null || input.getText().length() == 0) {
+                            String text = codeArea.getText();
+                            String wordToFind = input.getText();
+                            Pattern word = Pattern.compile(".*[^=,(\\\"\\\\\\/#:)](?=([^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$) " + wordToFind);
+                            Matcher match = word.matcher(text);
+                            while (match.find()) {
+                                System.out.println("Found " + wordToFind + " at index "+ match.start() +" - "+ (match.end()-1));
+                                //codeArea.setStyle(0, match.start(), match.end()-1, Collections.singleton("-rtfx-background-color: red;"));
+                                codeArea.setStyleClass(match.start(), (match.end()), "test");
+                            }
+                        }
+                    }
+                });
+
+                scene.getAccelerators().put(KeyCombination.keyCombination("CTRL+U"), new Runnable() {
+                    @Override
+                    public void run() {
+                        TextInputDialog textInputDialog = new TextInputDialog();
+                        textInputDialog.setTitle("Find usages");
+                        textInputDialog.getDialogPane().setContentText("Find");
+                        textInputDialog.getDialogPane().setHeaderText("Tell me word to search for");
+                        Optional<String> result = textInputDialog.showAndWait();
+                        TextField input = textInputDialog.getEditor();
+                        if (input.getText() != null || input.getText().length() == 0) {
+                            String text = codeArea.getText();
+                            String wordToFind = input.getText();
+                            Pattern word = Pattern.compile("[^//\\\\#](?=([^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$) " + wordToFind);
+                            Matcher match = word.matcher(text);
+                            while (match.find()) {
+                                System.out.println("Found " + wordToFind + " at index "+ match.start() +" - "+ (match.end()-1));
+                                //codeArea.setStyle(0, match.start(), match.end()-1, Collections.singleton("-rtfx-background-color: red;"));
+                                codeArea.setStyleClass(match.start(), (match.end()), "test");
+                            }
+                        }
+                    }
+                });
+
                 scene.getAccelerators().put(KeyCombination.keyCombination("CTRL+R"), new Runnable() {
                     @Override
                     public void run() {
