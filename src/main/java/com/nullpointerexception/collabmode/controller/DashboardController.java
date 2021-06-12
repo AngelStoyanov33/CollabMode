@@ -1,5 +1,6 @@
 package com.nullpointerexception.collabmode.controller;
 
+import com.jfoenix.controls.JFXCheckBox;
 import com.jfoenix.controls.JFXTreeView;
 import com.nullpointerexception.collabmode.application.Main;
 import com.nullpointerexception.collabmode.model.User;
@@ -28,7 +29,6 @@ import javafx.stage.Modality;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.util.Duration;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.net.ftp.FTPFile;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -39,7 +39,6 @@ import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.Paragraph;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
-import org.json.HTTP;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.reactfx.collection.ListModification;
@@ -54,11 +53,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class DashboardController {
 
-    private static String[] KEYWORDS = new String[] {
+    private static String[] KEYWORDS = new String[]{
             "abstract", "assert", "boolean", "break", "byte",
             "case", "catch", "char", "class", "const",
             "continue", "default", "do", "double", "else",
@@ -106,24 +104,40 @@ public class DashboardController {
 
     private static Stage stage;
 
-    @FXML private JFXTreeView<String> treeView;
-    @FXML private MenuBar menuBar;
-    @FXML private CodeArea codeArea;
-
-    @FXML private AnchorPane anchorPaneArea;
-
-    @FXML private ChoiceBox<String> choiceBox;
-    @FXML private TabPane tabPane;
-    @FXML private Menu collaborateMenu;
-    @FXML private MenuItem addTeam;
-    @FXML private Menu myTeamMenu;
-    @FXML private MenuItem createProjectItem;
-
-    @FXML private MenuItem invite;
-    @FXML private MenuItem join;
+    @FXML
+    private JFXTreeView<String> treeView;
+    @FXML
+    private MenuBar menuBar;
+    @FXML
+    private CodeArea codeArea;
 
     @FXML
-    public void initialize(){
+    private AnchorPane anchorPaneArea;
+
+    @FXML
+    private ChoiceBox<String> choiceBox;
+    @FXML
+    private TabPane tabPane;
+    @FXML
+    private Menu collaborateMenu;
+    @FXML
+    private MenuItem addTeam;
+    @FXML
+    private Menu myTeamMenu;
+    @FXML
+    private MenuItem createProjectItem;
+    @FXML
+    private JFXCheckBox autocompleteToggle;
+
+    @FXML
+    private MenuItem invite;
+    @FXML
+    private MenuItem join;
+
+    protected ChangeListener<String> autocompleteListener;
+
+    @FXML
+    public void initialize() {
         Logger logger = new Logger();
 
         checkTokenValidity();
@@ -132,14 +146,14 @@ public class DashboardController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if(currentUser.getTeamID() != 0) {
+        if (currentUser.getTeamID() != 0) {
             HTTPRequestManager httpRequestManager = new HTTPRequestManager();
             JSONObject json = new JSONObject();
             json.put("token", token);
             try {
                 String response = httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/getTeamName", json.toString());
                 json = new JSONObject(response);
-            }catch (IOException e){
+            } catch (IOException e) {
                 e.printStackTrace();
             }
             ftpManager = new FTPManager(FTPManager.FTP_SERVER_ADDRESS, 21, json.get("teamName").toString(), "");
@@ -157,7 +171,7 @@ public class DashboardController {
             mqttThread = new Thread(() -> {
                 MQTTManager mqttManager = new MQTTManager(currentUser, this);
                 try {
-                    MQTTManager.subscribe("teams/"+ teamCode + "/changes/sync");
+                    MQTTManager.subscribe("teams/" + teamCode + "/changes/sync");
                 } catch (MqttException e) {
                     e.printStackTrace();
                 }
@@ -177,20 +191,20 @@ public class DashboardController {
                 if (ButtonType.OK.equals(alertResult.get())) {
                     JSONObject secondJson = new JSONObject();
                     secondJson.put("token", token);
-                    try{
+                    try {
                         String response = httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/leave", secondJson.toString());
                         secondJson = new JSONObject(response);
-                        if(!secondJson.get("status").toString().equals("ok")){
+                        if (!secondJson.get("status").toString().equals("ok")) {
                             Alert errorAlert = new Alert(Alert.AlertType.ERROR);
                             errorAlert.setTitle("Leave error");
                             errorAlert.setContentText(secondJson.get("errorMessage").toString());
                             errorAlert.showAndWait();
                             return;
                         }
-                    }catch(IOException e){
+                    } catch (IOException e) {
                         e.printStackTrace();
                     }
-                }else if(ButtonType.CANCEL.equals(alertResult.get())){
+                } else if (ButtonType.CANCEL.equals(alertResult.get())) {
                     return;
                 }
             });
@@ -199,7 +213,7 @@ public class DashboardController {
         }
         loadHighlight(mode);
 
-        if(currentUser.getTeamID() != 0 && currentUser.isTeamOwner()) {
+        if (currentUser.getTeamID() != 0 && currentUser.isTeamOwner()) {
             MenuItem transferOwnerItem = new MenuItem();
             MenuItem kickTeammates = new MenuItem();
             transferOwnerItem.setText("Transfer ownership");
@@ -208,15 +222,15 @@ public class DashboardController {
                 List<String> choices = new ArrayList<>();
                 try {
                     users = fetchUsersByTeamID(currentUser.getTeamID());
-                    if(users == null){
+                    if (users == null) {
                         Alert alert = new Alert(Alert.AlertType.ERROR);
                         alert.setTitle("Transfer ownership error");
                         alert.setContentText("You're not currently in team!");
                         alert.showAndWait();
                         return;
                     }
-                    for(User user : users){
-                        if(user.getId() != currentUser.getId()) {
+                    for (User user : users) {
+                        if (user.getId() != currentUser.getId()) {
                             choices.add(user.getFullName());
                         }
                     }
@@ -230,15 +244,15 @@ public class DashboardController {
                 dialog.setContentText("Choose your new team leader:");
 
                 Optional<String> result = dialog.showAndWait();
-                if (result.isPresent()){
+                if (result.isPresent()) {
                     try {
                         System.out.println("Your choice: " + result.get());
                         HTTPRequestManager httpRequestManager = new HTTPRequestManager();
                         JSONObject json = new JSONObject();
                         int newOwnerID = 0;
                         json.put("token", token);
-                        for(User user : users){
-                            if(user.getFullName().equals(result.get())) {
+                        for (User user : users) {
+                            if (user.getFullName().equals(result.get())) {
                                 newOwnerID = user.getId();
                                 break;
                             }
@@ -255,7 +269,7 @@ public class DashboardController {
                         }
                         fetchUserDetails();
                         Main.openDashboardStage(token, "Java");
-                    }catch (IOException e){
+                    } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
@@ -267,15 +281,15 @@ public class DashboardController {
                 List<String> choices = new ArrayList<>();
                 try {
                     users = fetchUsersByTeamID(currentUser.getTeamID());
-                    if(users == null){
+                    if (users == null) {
                         Alert alert = new Alert(Alert.AlertType.ERROR);
                         alert.setTitle("Kick error");
                         alert.setContentText("You're not currently in team!");
                         alert.showAndWait();
                         return;
                     }
-                    for(User user : users){
-                        if(user.getId() != currentUser.getId()) {
+                    for (User user : users) {
+                        if (user.getId() != currentUser.getId()) {
                             choices.add(user.getFullName());
                         }
                     }
@@ -289,15 +303,15 @@ public class DashboardController {
                 dialog.setContentText("Kick:");
 
                 Optional<String> result = dialog.showAndWait();
-                if (result.isPresent()){
+                if (result.isPresent()) {
                     try {
                         System.out.println("Your choice: " + result.get());
                         HTTPRequestManager httpRequestManager = new HTTPRequestManager();
                         JSONObject json = new JSONObject();
                         int kickedMemberID = 0;
                         json.put("token", token);
-                        for(User user : users){
-                            if(user.getFullName().equals(result.get())) {
+                        for (User user : users) {
+                            if (user.getFullName().equals(result.get())) {
                                 kickedMemberID = user.getId();
                                 break;
                             }
@@ -314,7 +328,7 @@ public class DashboardController {
                         }
                         fetchUserDetails();
                         Main.openDashboardStage(token, mode);
-                    }catch (IOException e){
+                    } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
@@ -330,9 +344,9 @@ public class DashboardController {
         logout.setOnAction(event -> {
             String dataFolder = System.getenv("APPDATA");
             File authFile = new File(dataFolder + "\\CollabMode\\auth.ser");
-            if(authFile.exists()){
-                if(authFile.isFile()){
-                    if(!authFile.delete()){
+            if (authFile.exists()) {
+                if (authFile.isFile()) {
+                    if (!authFile.delete()) {
                         Alert alert = new Alert(Alert.AlertType.ERROR);
                         alert.setTitle("Logout error");
                         alert.setContentText("Could not logout, try again later");
@@ -349,7 +363,6 @@ public class DashboardController {
         });
 
 
-
         VirtualizedScrollPane sp = new VirtualizedScrollPane(codeArea);
         anchorPaneArea.getChildren().add(sp);
 
@@ -363,12 +376,12 @@ public class DashboardController {
                 .filter(change -> !change.isIdentity())
                 .successionEnds(java.time.Duration.ofMillis(500))
                 .subscribe(ignore -> {
-                    if(tabPane.getTabs().size() != 0) {
+                    if (tabPane.getTabs().size() != 0) {
                         try {
-                            if(!lock.isLocked()) {
+                            if (!lock.isLocked()) {
                                 MQTTManager.publish("teams/" + currentUser.getTeamCode() + "/changes/sync",
                                         "Change detected on file: " + currentFileLocationOnFTP);
-                            }else{
+                            } else {
                                 lock.unlock();
                             }
                         } catch (MqttException e) {
@@ -381,9 +394,9 @@ public class DashboardController {
         choiceBox.getItems().add("Java");
         choiceBox.getItems().add("C++");
         choiceBox.setValue(mode);
-choiceBox.getSelectionModel()
+        choiceBox.getSelectionModel()
                 .selectedItemProperty()
-                .addListener( (ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
+                .addListener((ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
                     lock.lock();
                     try {
                         if (newValue.equals("Java")) {
@@ -400,22 +413,22 @@ choiceBox.getSelectionModel()
                             codeArea.appendText(codeAreaContentCopy);
 
                         }
-                    }finally {
+                    } finally {
                         lock.unlock();
                     }
                 });
 
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
-        codeArea.setContextMenu( new DefaultContextMenu() );
+        codeArea.setContextMenu(new DefaultContextMenu());
         codeArea.getVisibleParagraphs().addModificationObserver(new VisibleParagraphStyler<>(codeArea, this::computeHighlighting));
 
-        final Pattern whiteSpace = Pattern.compile( "^\\s+" );
-        codeArea.addEventHandler( KeyEvent.KEY_PRESSED, KE ->{
-            if ( KE.getCode() == KeyCode.ENTER ) {
+        final Pattern whiteSpace = Pattern.compile("^\\s+");
+        codeArea.addEventHandler(KeyEvent.KEY_PRESSED, KE -> {
+            if (KE.getCode() == KeyCode.ENTER) {
                 int caretPosition = codeArea.getCaretPosition();
                 int currentParagraph = codeArea.getCurrentParagraph();
-                Matcher m0 = whiteSpace.matcher( codeArea.getParagraph( currentParagraph-1 ).getSegments().get( 0 ) );
-                if ( m0.find() ) Platform.runLater( () -> codeArea.insertText( caretPosition, m0.group() ) );
+                Matcher m0 = whiteSpace.matcher(codeArea.getParagraph(currentParagraph - 1).getSegments().get(0));
+                if (m0.find()) Platform.runLater(() -> codeArea.insertText(caretPosition, m0.group()));
             }
         });
 
@@ -423,65 +436,91 @@ choiceBox.getSelectionModel()
             codeArea.replaceText(0, 0, codeArea.getText());
         }));
         timeline.play();
-		
-		final Popup[] popup = {new Popup()};
+
+        final Popup[] popup = {new Popup()};
         final ListView[] lop = {new ListView()};
 
-        codeArea.textProperty().addListener((observableValue, s, s2) -> {
-            lock.lock();
-            try {
-                String w = "", word = "";
-                for (int i = (int) codeArea.getAnchor() - 1; i > 0; i--) {
-                    if (!(codeArea.getText().charAt(i) == ' ') || !(codeArea.getText().charAt(i) == '\n')) {
-                        w += codeArea.getText().charAt(i);
-                    }else{
-                        break;
-                    }
-                }
-                for (int i = w.length() - 1; i >= 0; i--) {
-                    word += w.charAt(i);
-                }
-                if (!word.equals("")) {
-                    ArrayList<String> suggestions = new ArrayList<>();
-                    for (String keyword : KEYWORDS) {
-                        if (keyword.contains(word)) {
-                            suggestions.add(keyword);
+        if (autocompleteListener == null) {
+            autocompleteListener = new ChangeListener() {
+                @Override
+                public synchronized void changed(ObservableValue observable, Object oldValue, Object newValue) {
+                    String curr = "";
+                    String currFinal = "";
+                    for (int i = codeArea.getAnchor() - 1; i > 0; i--) {
+                        if (codeArea.getText().charAt(i) == '\n' || codeArea.getText().charAt(i) == ' ') {
+                            break;
+                        } else {
+                            curr += codeArea.getText().charAt(i);
                         }
                     }
-					
-                    popup[0].hide();
-                    lop[0] = new ListView();
 
-                    if (suggestions.size() > 0) {
-                        for (String suggestion : suggestions) {
-                            lop[0].getItems().add(suggestion);
+                    for (int i = curr.length() - 1; i >= 0; i--) {
+                        currFinal += curr.charAt(i);
+                    }
+
+                    if (!currFinal.equals("")) {
+                        ArrayList<String> fil = new ArrayList<String>();
+                        for (int i = 0; i < KEYWORDS.length; i++) {
+                            if (KEYWORDS[i].contains(currFinal)) {
+                                fil.add(KEYWORDS[i]);
+                            }
                         }
-                        popup[0] = new Popup();
-                        popup[0].getContent().removeAll(lop[0]);
 
-                        lop[0].setMaxHeight(80);
-                        popup[0].getContent().addAll(lop[0]);
+                        if (popup[0] != null) {
+                            popup[0].hide();
+                        }
+                        if (fil.size() > 0) {
+                            lop[0] = new ListView();
+                            for (int i = 0; i < fil.size(); i++) {
+                                lop[0].getItems().add(fil.get(i));
+                            }
+                            lop[0].setMaxHeight(80);
+                            popup[0].getContent().addAll(lop[0]);
 
-                        String finalWord = word;
-                        lop[0].getSelectionModel().selectedItemProperty().addListener((ChangeListener<String>) (observable, oldValue, newValue) -> {
-                            System.out.println("Selected item: " + newValue + " "+ codeArea.getCaretPosition());
-                            System.out.println(finalWord);
-                            codeArea.replaceText(codeArea.getText() + newValue);
-                        });
+                            String finalCurrFinal = currFinal;
+                            lop[0].getSelectionModel().selectedItemProperty().addListener((ChangeListener<String>) (ov, oldv, nv) -> {
+                                String text = codeArea.getText();
+                                String wordToFind = finalCurrFinal;
+                                Pattern word = Pattern.compile(wordToFind);
+                                Matcher match = word.matcher(text);
+                                while (match.find()) {
+                                    if (match.end() + 2 >= codeArea.getCaretPosition()) {
+                                        if (match.start() == 1) {
+                                            codeArea.replaceText(match.start() - 1, codeArea.getCaretPosition(), nv);
+                                        } else {
+                                            codeArea.replaceText(match.start(), codeArea.getCaretPosition(), nv);
+                                        }
 
-                        popup[0].show(codeArea, codeArea.getCaretBounds().get().getMaxX(), codeArea.getCaretBounds().get().getMaxY());
+                                    }
+                                }
+                            });
+
+
+                            popup[0].show(codeArea, codeArea.getCaretBounds().get().getMaxX(), codeArea.getCaretBounds().get().getMaxY());
+                            codeArea.requestFocus();
+
+                        }
                         codeArea.requestFocus();
-                    }
-                    codeArea.requestFocus();
-                } else {
-                    if (popup[0] != null) {
-                        popup[0].hide();
+                    } else {
+                        if (popup[0] != null) {
+                            popup[0].hide();
+                        }
                     }
                 }
-            }finally {
-                lock.unlock();
+            };
+        }
+
+        autocompleteToggle.setSelected(true); // default (autocomplete is on)
+        autocompleteToggle.setOnAction(event -> {
+            if (autocompleteToggle.isSelected()) {
+                toggleAutocomplete(true);
+            } else {
+                toggleAutocomplete(false);
             }
         });
+
+        toggleAutocomplete(true);
+
 
         createProjectItem.setOnAction(event -> {
             TextInputDialog textInputDialog = new TextInputDialog();
@@ -587,10 +626,10 @@ choiceBox.getSelectionModel()
                     choiceBox.setValue("C++");
 
                 }
-            }finally {
+            } finally {
 
             }
-                loadFTPTree();
+            loadFTPTree();
         });
 
         addNewDirectory.setOnAction(event -> {
@@ -623,7 +662,7 @@ choiceBox.getSelectionModel()
                 String path = getPathOfItem();
                 String newPath = path;
                 int index = newPath.lastIndexOf('/');
-                newPath = newPath.substring(0,index);
+                newPath = newPath.substring(0, index);
                 newPath += "/";
                 newPath += input.getText();
 
@@ -678,7 +717,7 @@ choiceBox.getSelectionModel()
                     try {
                         String response = httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/createTeam", json.toString());
                         json = new JSONObject(response);
-                        if(!json.get("status").toString().equals("ok")){
+                        if (!json.get("status").toString().equals("ok")) {
                             Alert alert = new Alert(Alert.AlertType.ERROR);
                             alert.setTitle("Add team error");
                             alert.setContentText(json.get("errorMessage").toString());
@@ -707,14 +746,14 @@ choiceBox.getSelectionModel()
             try {
                 String response = httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/sendInvite", json.toString());
                 json = new JSONObject(response);
-                if(!json.get("status").toString().equals("ok")) {
+                if (!json.get("status").toString().equals("ok")) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Invite others error");
                     alert.setContentText(json.get("errorMessage").toString());
                     alert.showAndWait();
                     return;
                 }
-                    input.setText(json.get("teamCode").toString());
+                input.setText(json.get("teamCode").toString());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -737,7 +776,7 @@ choiceBox.getSelectionModel()
                 try {
                     String response = httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/joinTeam", json.toString());
                     json = new JSONObject(response);
-                    if(!json.get("status").toString().equals("ok")){
+                    if (!json.get("status").toString().equals("ok")) {
                         Alert alert = new Alert(Alert.AlertType.ERROR);
                         alert.setTitle("Join team error");
                         alert.setContentText(json.get("errorMessage").toString());
@@ -772,8 +811,8 @@ choiceBox.getSelectionModel()
         }
     }
 
-    private ArrayList<User> fetchUsersByTeamID(int teamID) throws IOException{
-        if(teamID != 0) {
+    private ArrayList<User> fetchUsersByTeamID(int teamID) throws IOException {
+        if (teamID != 0) {
             ArrayList<User> users = new ArrayList<>();
             HTTPRequestManager httpRequestManager = new HTTPRequestManager();
             JSONObject json = new JSONObject();
@@ -790,7 +829,7 @@ choiceBox.getSelectionModel()
                 }
             }
             return users;
-        }else{
+        } else {
             return null;
         }
     }
@@ -824,15 +863,15 @@ choiceBox.getSelectionModel()
 
     }
 
-    public void setupAccelerator(){
-        if(codeArea != null){
+    public void setupAccelerator() {
+        if (codeArea != null) {
             Scene scene = codeArea.getScene();
-            if(scene != null){
+            if (scene != null) {
                 scene.getAccelerators().put(KeyCombination.keyCombination("CTRL+S"), new Runnable() {
                     @Override
                     public void run() {
-                        if(currentFile != null) {
-                            if(ftpManager != null) {
+                        if (currentFile != null) {
+                            if (ftpManager != null) {
                                 PrintWriter writer = null;
                                 try {
                                     writer = new PrintWriter(currentFile.getAbsolutePath(), "UTF-8");
@@ -862,7 +901,7 @@ choiceBox.getSelectionModel()
                             Pattern word = Pattern.compile(wordToFind);
                             Matcher match = word.matcher(text);
                             while (match.find()) {
-                                System.out.println("Found " + wordToFind + " at index "+ match.start() +" - "+ (match.end()-1));
+                                System.out.println("Found " + wordToFind + " at index " + match.start() + " - " + (match.end() - 1));
                                 //codeArea.setStyle(0, match.start(), match.end()-1, Collections.singleton("-rtfx-background-color: red;"));
                                 codeArea.setStyleClass(match.start(), (match.end()), "test");
                             }
@@ -885,7 +924,7 @@ choiceBox.getSelectionModel()
                             Pattern word = Pattern.compile(".*[^=,(\\\"\\\\\\/#:)](?=([^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$) " + wordToFind);
                             Matcher match = word.matcher(text);
                             while (match.find()) {
-                                System.out.println("Found " + wordToFind + " at index "+ match.start() +" - "+ (match.end()-1));
+                                System.out.println("Found " + wordToFind + " at index " + match.start() + " - " + (match.end() - 1));
                                 codeArea.setStyleClass(match.start(), (match.end()), "test");
                             }
                         }
@@ -907,7 +946,7 @@ choiceBox.getSelectionModel()
                             Pattern word = Pattern.compile("[^//\\\\#](?=([^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$) " + wordToFind);
                             Matcher match = word.matcher(text);
                             while (match.find()) {
-                                System.out.println("Found " + wordToFind + " at index "+ match.start() +" - "+ (match.end()-1));
+                                System.out.println("Found " + wordToFind + " at index " + match.start() + " - " + (match.end() - 1));
                                 codeArea.setStyleClass(match.start(), (match.end()), "test");
                             }
                         }
@@ -936,12 +975,11 @@ choiceBox.getSelectionModel()
                                 Pattern word = Pattern.compile(wordToFind);
                                 Matcher match = word.matcher(text);
                                 while (match.find()) {
-                                    System.out.println("Found " + wordToFind + " at index "+ match.start() +" - "+ (match.end()-1));
+                                    System.out.println("Found " + wordToFind + " at index " + match.start() + " - " + (match.end() - 1));
                                     //codeArea.setStyle(0, match.start(), match.end()-1, Collections.singleton("-rtfx-background-color: red;"));
                                     codeArea.replaceText(match.start(), match.end(), input2.getText());
                                 }
                             }
-
 
 
                         }
@@ -952,21 +990,21 @@ choiceBox.getSelectionModel()
     }
 
 
-    public TreeItem<String> getNodesForDirectory(FTPFile dir){
+    public TreeItem<String> getNodesForDirectory(FTPFile dir) {
         TreeItem<String> root = new TreeItem<>(dir.getName(), new ImageView(new Image("/assets/folder_icon.png")));
         for (FTPFile f : ftpManager.getFilesByPath(dir.getName())) {
             if (f.isDirectory()) {
                 root.getChildren().add(getNodesForDirectory(f));
             } else {
-                if(FilenameUtils.getExtension(f.getName()).equals("java")) {
+                if (FilenameUtils.getExtension(f.getName()).equals("java")) {
                     root.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/Java-icon.png"))));
-                }else if(FilenameUtils.getExtension(f.getName()).equals("c")){
+                } else if (FilenameUtils.getExtension(f.getName()).equals("c")) {
                     root.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/c-programming.png"))));
-                }else if(FilenameUtils.getExtension(f.getName()).equals("py")){
+                } else if (FilenameUtils.getExtension(f.getName()).equals("py")) {
                     root.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/python_icon.png"))));
-                }else if(FilenameUtils.getExtension(f.getName()).equals("cpp") || FilenameUtils.getExtension(f.getName()).equals("cc")){
+                } else if (FilenameUtils.getExtension(f.getName()).equals("cpp") || FilenameUtils.getExtension(f.getName()).equals("cc")) {
                     root.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/cplusplus.png"))));
-                }else {
+                } else {
                     root.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/file_icon.png"))));
                 }
             }
@@ -974,10 +1012,10 @@ choiceBox.getSelectionModel()
         return root;
     }
 
-    public String getPathOfItem(){
+    public String getPathOfItem() {
         StringBuilder pathBuilder = new StringBuilder();
         for (TreeItem<String> item = treeView.getSelectionModel().getSelectedItem();
-             item != null ; item = item.getParent()) {
+             item != null; item = item.getParent()) {
 
             pathBuilder.insert(0, item.getValue());
             pathBuilder.insert(0, "/");
@@ -987,7 +1025,7 @@ choiceBox.getSelectionModel()
         return path;
     }
 
-    public void loadFTPTree(){
+    public void loadFTPTree() {
         FTPFile[] files = ftpManager.getFiles();
 
         TreeItem<String> item = new TreeItem<String>("File tree", new ImageView(new Image("/assets/tree_icon.png")));
@@ -997,23 +1035,23 @@ choiceBox.getSelectionModel()
         for (FTPFile f : files) {
             if (f.isDirectory()) {
                 item.getChildren().add(getNodesForDirectory(f));
-            }else {
-                if(FilenameUtils.getExtension(f.getName()).equals("java")) {
+            } else {
+                if (FilenameUtils.getExtension(f.getName()).equals("java")) {
                     item.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/Java-icon.png"))));
-                }else if(FilenameUtils.getExtension(f.getName()).equals("c")){
+                } else if (FilenameUtils.getExtension(f.getName()).equals("c")) {
                     item.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/c-programming.png"))));
-                }else if(FilenameUtils.getExtension(f.getName()).equals("py")){
+                } else if (FilenameUtils.getExtension(f.getName()).equals("py")) {
                     item.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/python_icon.png"))));
-                }else if(FilenameUtils.getExtension(f.getName()).equals("cpp") || FilenameUtils.getExtension(f.getName()).equals("cc")){
+                } else if (FilenameUtils.getExtension(f.getName()).equals("cpp") || FilenameUtils.getExtension(f.getName()).equals("cc")) {
                     item.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/cplusplus.png"))));
-                }else {
+                } else {
                     item.getChildren().add(new TreeItem<String>(f.getName(), new ImageView(new Image("/assets/file_icon.png"))));
                 }
             }
         }
     }
 
-    public void forceSave(){
+    public void forceSave() {
         lock.lock();
         try {
             if (currentFile != null) {
@@ -1031,12 +1069,12 @@ choiceBox.getSelectionModel()
                     ftpManager.uploadFile(currentFile.getAbsolutePath(), currentFileLocationOnFTP.substring(0, currentFileLocationOnFTP.lastIndexOf('/')));
                 }
             }
-        }finally {
+        } finally {
             lock.unlock();
         }
     }
 
-    public void forceLoad(){
+    public void forceLoad() {
         Platform.setImplicitExit(false);
         Platform.runLater(() -> {
             lock.lock();
@@ -1079,7 +1117,7 @@ choiceBox.getSelectionModel()
                         sc.close();
                     }
                 }
-            }finally {
+            } finally {
 
             }
         });
@@ -1093,7 +1131,7 @@ choiceBox.getSelectionModel()
         int lastKwEnd = 0;
         StyleSpansBuilder<Collection<String>> spansBuilder
                 = new StyleSpansBuilder<>();
-        while(matcher.find()) {
+        while (matcher.find()) {
             String styleClass =
                     matcher.group("KEYWORD") != null ? "keyword" :
                             matcher.group("PAREN") != null ? "paren" :
@@ -1102,7 +1140,8 @@ choiceBox.getSelectionModel()
                                                     matcher.group("SEMICOLON") != null ? "semicolon" :
                                                             matcher.group("STRING") != null ? "string" :
                                                                     matcher.group("COMMENT") != null ? "comment" :
-                                                                            null; /* never happens */ assert styleClass != null;
+                                                                            null; /* never happens */
+            assert styleClass != null;
             spansBuilder.add(Collections.emptyList(), matcher.start() - lastKwEnd);
             spansBuilder.add(Collections.singleton(styleClass), matcher.end() - matcher.start());
             lastKwEnd = matcher.end();
@@ -1111,30 +1150,25 @@ choiceBox.getSelectionModel()
         return spansBuilder.create();
     }
 
-    private class VisibleParagraphStyler<PS, SEG, S> implements Consumer<ListModification<? extends Paragraph<PS, SEG, S>>>
-    {
+    private class VisibleParagraphStyler<PS, SEG, S> implements Consumer<ListModification<? extends Paragraph<PS, SEG, S>>> {
         private final GenericStyledArea<PS, SEG, S> area;
-        private final Function<String,StyleSpans<S>> computeStyles;
+        private final Function<String, StyleSpans<S>> computeStyles;
         private int prevParagraph, prevTextLength;
 
-        public VisibleParagraphStyler( GenericStyledArea<PS, SEG, S> area, Function<String,StyleSpans<S>> computeStyles )
-        {
+        public VisibleParagraphStyler(GenericStyledArea<PS, SEG, S> area, Function<String, StyleSpans<S>> computeStyles) {
             this.computeStyles = computeStyles;
             this.area = area;
         }
 
         @Override
-        public void accept( ListModification<? extends Paragraph<PS, SEG, S>> lm )
-        {
-            if ( lm.getAddedSize() > 0 )
-            {
-                int paragraph = Math.min( area.firstVisibleParToAllParIndex() + lm.getFrom(), area.getParagraphs().size()-1 );
-                String text = area.getText( paragraph, 0, paragraph, area.getParagraphLength( paragraph ) );
+        public void accept(ListModification<? extends Paragraph<PS, SEG, S>> lm) {
+            if (lm.getAddedSize() > 0) {
+                int paragraph = Math.min(area.firstVisibleParToAllParIndex() + lm.getFrom(), area.getParagraphs().size() - 1);
+                String text = area.getText(paragraph, 0, paragraph, area.getParagraphLength(paragraph));
 
-                if ( paragraph != prevParagraph || text.length() != prevTextLength )
-                {
-                    int startPos = area.getAbsolutePosition( paragraph, 0 );
-                    Platform.runLater( () -> area.setStyleSpans( startPos, computeStyles.apply( text ) ) );
+                if (paragraph != prevParagraph || text.length() != prevTextLength) {
+                    int startPos = area.getAbsolutePosition(paragraph, 0);
+                    Platform.runLater(() -> area.setStyleSpans(startPos, computeStyles.apply(text)));
                     prevTextLength = text.length();
                     prevParagraph = paragraph;
                 }
@@ -1145,8 +1179,7 @@ choiceBox.getSelectionModel()
     private class DefaultContextMenu extends ContextMenu {
         private MenuItem fold, unfold, copy, paste, cut, undo, redo;
 
-        public DefaultContextMenu()
-        {
+        public DefaultContextMenu() {
             copy = new MenuItem("Copy");
             copy.setAccelerator(new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN));
             copy.setOnAction(AE -> {
@@ -1177,13 +1210,19 @@ choiceBox.getSelectionModel()
                 redo();
             });
 
-            fold = new MenuItem( "Fold" );
-            fold.setOnAction( AE -> { hide(); fold(); } );
+            fold = new MenuItem("Fold");
+            fold.setOnAction(AE -> {
+                hide();
+                fold();
+            });
 
-            unfold = new MenuItem( "Unfold" );
-            unfold.setOnAction( AE -> { hide(); unfold(); } );
+            unfold = new MenuItem("Unfold");
+            unfold.setOnAction(AE -> {
+                hide();
+                unfold();
+            });
 
-            getItems().addAll( fold, unfold, copy, paste, cut, undo, redo);
+            getItems().addAll(fold, unfold, copy, paste, cut, undo, redo);
         }
 
         /**
@@ -1198,35 +1237,35 @@ choiceBox.getSelectionModel()
          */
         private void unfold() {
             CodeArea area = (CodeArea) getOwnerNode();
-            area.unfoldParagraphs( area.getCurrentParagraph() );
+            area.unfoldParagraphs(area.getCurrentParagraph());
         }
 
-        private void copy(){
+        private void copy() {
             ((CodeArea) getOwnerNode()).copy();
         }
 
-        private void paste(){
+        private void paste() {
             ((CodeArea) getOwnerNode()).paste();
         }
 
-        private void cut(){
+        private void cut() {
             ((CodeArea) getOwnerNode()).cut();
         }
 
-        private void undo(){
-            if(((CodeArea) getOwnerNode()).isUndoAvailable()){
+        private void undo() {
+            if (((CodeArea) getOwnerNode()).isUndoAvailable()) {
                 ((CodeArea) getOwnerNode()).undo();
             }
         }
 
-        private void redo(){
-            if(((CodeArea) getOwnerNode()).isRedoAvailable()){
+        private void redo() {
+            if (((CodeArea) getOwnerNode()).isRedoAvailable()) {
                 ((CodeArea) getOwnerNode()).redo();
             }
         }
     }
 
-    public static void setMode(String mode){
+    public static void setMode(String mode) {
         DashboardController.mode = mode;
     }
 
@@ -1234,8 +1273,8 @@ choiceBox.getSelectionModel()
         return mqttThread;
     }
 
-    public static void loadHighlight(String mode){
-        if(mode.equals("Java")) {
+    public static void loadHighlight(String mode) {
+        if (mode.equals("Java")) {
             KEYWORDS = new String[]{
                     "abstract", "assert", "boolean", "break", "byte",
                     "case", "catch", "char", "class", "const",
@@ -1248,7 +1287,7 @@ choiceBox.getSelectionModel()
                     "switch", "synchronized", "this", "throw", "throws",
                     "transient", "try", "void", "volatile", "while"
             };
-        }else if(mode.equals("C++")){
+        } else if (mode.equals("C++")) {
             KEYWORDS = new String[]{
                     "asm", "auto", "bool", "break", "case", "catch",
                     "char", "class", "const", "const_char", "continue",
@@ -1283,6 +1322,16 @@ choiceBox.getSelectionModel()
                         + "|(?<STRING>" + STRING_PATTERN + ")"
                         + "|(?<COMMENT>" + COMMENT_PATTERN + ")"
         );
+    }
+
+    public void toggleAutocomplete(boolean state) {
+        if (autocompleteListener != null) {
+            if (state) {
+                codeArea.textProperty().addListener(autocompleteListener);
+            } else {
+                codeArea.textProperty().removeListener(autocompleteListener);
+            }
+        }
     }
 
 }

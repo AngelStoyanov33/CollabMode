@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.jfoenix.controls.JFXCheckBox?>
 <?import com.jfoenix.controls.JFXTabPane?>
 <?import com.jfoenix.controls.JFXTextArea?>
 <?import com.jfoenix.controls.JFXTreeView?>
@@ -7,12 +8,11 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.control.Tab?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
-
 <?import org.fxmisc.richtext.CodeArea?>
-<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nullpointerexception.collabmode.controller.DashboardController">
+
+<BorderPane xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.nullpointerexception.collabmode.controller.DashboardController">
    <top>
       <AnchorPane prefHeight="720.0" prefWidth="900.0" BorderPane.alignment="CENTER">
          <children>
@@ -60,6 +60,7 @@
                      <CodeArea fx:id="codeArea" layoutY="3.0" prefHeight="621.0" prefWidth="652.0" />
                      </children>
                   </AnchorPane>
+                  <JFXCheckBox fx:id="autocompleteToggle" layoutX="14.0" layoutY="671.0" prefHeight="18.0" prefWidth="120.0" text="Autocomplete" />
            </children></AnchorPane>
          </children></AnchorPane>
    </top>
