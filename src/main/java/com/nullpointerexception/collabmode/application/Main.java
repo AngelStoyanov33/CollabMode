@@ -115,6 +115,7 @@ public class Main extends Application {
         Scene scene = new Scene(root,900,725);
         scene.getStylesheets().add(String.valueOf(Main.class.getClassLoader().getResource("css/application.css")));
         scene.getStylesheets().add(String.valueOf(Main.class.getClassLoader().getResource("css/java-keywords.css")));
+        scene.getStylesheets().add(String.valueOf(Main.class.getClassLoader().getResource("css/custom-styles.css")));
         DashboardController dashboardController = (DashboardController) loader.getController();
         dashboardStage.setScene(scene);
         dashboardStage.setTitle("CollabMode v0.0.4-SNAPSHOT");

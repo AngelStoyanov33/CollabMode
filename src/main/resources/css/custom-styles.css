@@ -1,0 +1,5 @@
+.red-text {
+    -fx-font-color: red;
+}
+
+.highlight { -rtfx-background-color: yellow; }
