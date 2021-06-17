@@ -943,7 +943,6 @@ public class DashboardController {
                                 }finally {
                                     lock.unlock();
                                 }
-
                             }
                         }
                     }
@@ -964,8 +963,14 @@ public class DashboardController {
                             Pattern word = Pattern.compile(".*[^=,(\\\"\\\\\\/#:)](?=([^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$) " + wordToFind);
                             Matcher match = word.matcher(text);
                             while (match.find()) {
-                                System.out.println("Found " + wordToFind + " at index " + match.start() + " - " + (match.end() - 1));
-                                codeArea.setStyleClass(match.start(), (match.end()), "test");
+                                lock.lock();
+                                try{
+                                    System.out.println("Found " + wordToFind + " at index " + match.start() + " - " + (match.end() - 1));
+                                    List<String> styleClasses = Arrays.asList("red-text", "highlight");
+                                    codeArea.setStyle(match.start(), match.end(), styleClasses);
+                                }finally {
+                                    lock.unlock();
+                                }
                             }
                         }
                     }
@@ -986,8 +991,14 @@ public class DashboardController {
                             Pattern word = Pattern.compile("[^//\\\\#](?=([^\\\"]*\\\"[^\\\"]*\\\")*[^\\\"]*$) " + wordToFind);
                             Matcher match = word.matcher(text);
                             while (match.find()) {
-                                System.out.println("Found " + wordToFind + " at index " + match.start() + " - " + (match.end() - 1));
-                                codeArea.setStyleClass(match.start(), (match.end()), "test");
+                                lock.lock();
+                                try{
+                                    System.out.println("Found " + wordToFind + " at index " + match.start() + " - " + (match.end() - 1));
+                                    List<String> styleClasses = Arrays.asList("red-text", "highlight");
+                                    codeArea.setStyle(match.start(), match.end(), styleClasses);
+                                }finally {
+                                    lock.unlock();
+                                }
                             }
                         }
                     }
