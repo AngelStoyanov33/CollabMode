@@ -81,7 +81,7 @@ public class Main extends Application {
         Scene scene = new Scene(root,900,725);
         scene.getStylesheets().add(String.valueOf(Main.class.getClassLoader().getResource("css/application.css")));
         loginStage.setScene(scene);
-        loginStage.setTitle("CollabMode v0.0.1-SNAPSHOT");
+        loginStage.setTitle("CollabMode v0.0.4-SNAPSHOT");
         loginStage.show();
         loginStage.getIcons().add(new Image("/assets/logo_wt.png"));
         if(currentStage != null) {
@@ -97,7 +97,7 @@ public class Main extends Application {
         Scene scene = new Scene(root,900,725);
         scene.getStylesheets().add(String.valueOf(Main.class.getClassLoader().getResource("css/application.css")));
         registerStage.setScene(scene);
-        registerStage.setTitle("CollabMode v0.0.1-SNAPSHOT");
+        registerStage.setTitle("CollabMode v0.0.4-SNAPSHOT");
         registerStage.show();
         registerStage.getIcons().add(new Image("/assets/logo_wt.png"));
         if(currentStage != null) {
@@ -117,7 +117,7 @@ public class Main extends Application {
         scene.getStylesheets().add(String.valueOf(Main.class.getClassLoader().getResource("css/java-keywords.css")));
         DashboardController dashboardController = (DashboardController) loader.getController();
         dashboardStage.setScene(scene);
-        dashboardStage.setTitle("CollabMode v0.0.1-SNAPSHOT");
+        dashboardStage.setTitle("CollabMode v0.0.4-SNAPSHOT");
         dashboardStage.show();
         dashboardController.setupAccelerator();
         dashboardStage.getIcons().add(new Image("/assets/logo_wt.png"));

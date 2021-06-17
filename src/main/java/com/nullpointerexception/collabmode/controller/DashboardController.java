@@ -16,6 +16,8 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -25,6 +27,7 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
@@ -209,6 +212,32 @@ public class DashboardController {
                 }
             });
             myTeamMenu.getItems().add(leaveTeamItem);
+
+
+            MenuItem chatMenuItem = new MenuItem();
+            chatMenuItem.setText("Chat");
+            chatMenuItem.setOnAction(event -> {
+                try {
+                    ChatController.setUser(currentUser);
+                    FXMLLoader loader = new FXMLLoader(Main.class.getResource("/fxml/chat.fxml"));
+                    BorderPane root = (BorderPane) loader.load();
+                    Scene scene = new Scene(root,725,500);
+                    scene.getStylesheets().add(String.valueOf(Main.class.getClassLoader().getResource("css/application.css")));
+                    scene.getStylesheets().add(String.valueOf(Main.class.getClassLoader().getResource("css/java-keywords.css")));
+                    Stage stage = new Stage();
+                    stage.setTitle("CollabMode Chat");
+                    stage.setScene(scene);
+                    stage.getIcons().add(new Image("/assets/logo_wt.png"));
+                    stage.show();
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            myTeamMenu.getItems().add(chatMenuItem);
+
+
+
 
         }
         loadHighlight(mode);
