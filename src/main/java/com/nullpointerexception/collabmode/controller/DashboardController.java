@@ -93,6 +93,7 @@ public class DashboardController {
     private ExecutorService executor;
 
     private final static int INTERVAL = 2 * 60; //2 minutes (120 seconds)
+    private final static int CURSOR_INTERVAL = 5; //2 minutes (120 seconds)
     private static String token = "";
     private static User currentUser = null;
     private static FTPManager ftpManager;
@@ -189,6 +190,7 @@ public class DashboardController {
                 MQTTManager mqttManager = new MQTTManager(currentUser, this);
                 try {
                     MQTTManager.subscribe("teams/" + teamCode + "/changes/sync");
+                    MQTTManager.subscribe("teams/" + teamCode + "/cursor/sync");
                 } catch (MqttException e) {
                     // added
                     StringWriter sw = new StringWriter();
@@ -198,6 +200,8 @@ public class DashboardController {
                 }
             });
             mqttThread.start();
+
+            updateCursor();
 
             loadFTPTree();
 
@@ -968,6 +972,21 @@ public class DashboardController {
         timeline.play();
 
     }
+
+    private void updateCursor(){
+        Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(CURSOR_INTERVAL), ev -> {
+            System.out.println("here");
+            if(currentFile != null) {
+                try {
+                    MQTTManager.publish("teams/" + currentUser.getTeamCode() + "/cursor/sync", codeArea.getCaretPosition() + "");
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+            }
+        }));
+        timeline.play();
+    }
+
 
     public void setupAccelerator() {
         if (codeArea != null) {

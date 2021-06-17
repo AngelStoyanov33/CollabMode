@@ -43,8 +43,13 @@ public class MQTTManager {
                         dashboardRef.forceLoad();
                     }
 
+            }else{
+                try{
+                    int caret = Integer.parseInt(messageString);
+                }catch (NumberFormatException e){
+                    // nothing
                 }
-
+            }
         }
 
         public void deliveryComplete(IMqttDeliveryToken token) {
