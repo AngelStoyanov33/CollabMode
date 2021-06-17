@@ -4,6 +4,7 @@ import com.nullpointerexception.collabmode.controller.DashboardController;
 import com.nullpointerexception.collabmode.service.HTTPRequestManager;
 import com.nullpointerexception.collabmode.service.MQTTManager;
 import com.nullpointerexception.collabmode.service.Serializer;
+import com.nullpointerexception.collabmode.util.Logger;
 import com.sun.deploy.uitoolkit.impl.fx.HostServicesFactory;
 import com.sun.javafx.application.HostServicesDelegate;
 import javafx.application.Application;
@@ -16,6 +17,8 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -23,7 +26,8 @@ public class Main extends Application {
 
     private static HostServicesDelegate hostServices;
     private static Stage currentStage;
-
+    private Logger logger = new Logger();
+    
     @Override
     public void start(Stage primaryStage) throws Exception{
         hostServices = HostServicesFactory.getInstance(this);
@@ -49,7 +53,10 @@ public class Main extends Application {
                         Main.openRegisterStage();
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    StringWriter sw = new StringWriter();
+                    PrintWriter pw = new PrintWriter(sw);
+                    e.printStackTrace(pw);
+                    logger.log("WARN", sw.toString());
                 }
 
             }
