@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 
 public class FTPManager {
     private static FTPClient ftpClient = null;
-    public static final String FTP_SERVER_ADDRESS = "192.168.0.101";
+    public static final String FTP_SERVER_ADDRESS = "192.168.0.100";
 
     public FTPManager(String serverAddress, int serverPort, String ftpUser, String ftpPassword){
         ftpClient = new FTPClient();

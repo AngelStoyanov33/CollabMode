@@ -2,4 +2,7 @@
     -fx-font-color: red;
 }
 
-.highlight { -rtfx-background-color: yellow; }
+.highlight {
+	-fx-fill: red;
+	-rtfx-background-color: #ccc;
+}

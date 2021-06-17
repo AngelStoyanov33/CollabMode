@@ -55,7 +55,7 @@ public class MQTTManager {
 
     private final DashboardController dashboardRef;
     private static User currentUserRef;
-    private static String broker = "tcp://192.168.0.101:1883";
+    private static String broker = "tcp://192.168.0.100:1883";
     private static MemoryPersistence memoryPersistence;
 
     private static MqttClient mqttClient;

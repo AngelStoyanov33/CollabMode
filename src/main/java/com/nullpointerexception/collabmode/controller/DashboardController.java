@@ -149,6 +149,9 @@ public class DashboardController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        codeArea.getStylesheets().add(String.valueOf(Main.class.getClassLoader().getResource("css/custom-styles.css")));
+
         if (currentUser.getTeamID() != 0) {
             HTTPRequestManager httpRequestManager = new HTTPRequestManager();
             JSONObject json = new JSONObject();
@@ -930,11 +933,17 @@ public class DashboardController {
                             Pattern word = Pattern.compile(wordToFind);
                             Matcher match = word.matcher(text);
                             while (match.find()) {
-                                System.out.println("Found " + wordToFind + " at index " + match.start() + " - " + (match.end() - 1));
-                                //codeArea.setStyle(0, match.start(), match.end()-1, Collections.singleton("-rtfx-background-color: red;"));
-                                //codeArea.setStyleClass(match.start(), (match.end()), "test");
-                                List<String> styleClasses = Arrays.asList("red-text", "highlight");
-                                codeArea.setStyle(match.start(), match.end(), styleClasses);
+                                lock.lock();
+                                try {
+                                    System.out.println("Found " + wordToFind + " at index " + match.start() + " - " + (match.end() - 1));
+                                    //codeArea.setStyle(0, match.start(), match.end()-1, Collections.singleton("-rtfx-background-color: red;"));
+                                    //codeArea.setStyleClass(match.start(), (match.end()), "test");
+                                    List<String> styleClasses = Arrays.asList("red-text", "highlight");
+                                    codeArea.setStyle(match.start(), match.end(), styleClasses);
+                                }finally {
+                                    lock.unlock();
+                                }
+
                             }
                         }
                     }
