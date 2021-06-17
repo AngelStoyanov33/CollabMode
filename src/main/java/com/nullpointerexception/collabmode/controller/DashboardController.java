@@ -138,16 +138,19 @@ public class DashboardController {
     private MenuItem join;
 
     protected ChangeListener<String> autocompleteListener;
+    private Logger logger = new Logger();
 
     @FXML
     public void initialize() {
-        Logger logger = new Logger();
-
         checkTokenValidity();
         try {
             fetchUserDetails();
         } catch (IOException e) {
-            e.printStackTrace();
+            // added
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            logger.log("WARN", sw.toString());
         }
 
         codeArea.getStylesheets().add(String.valueOf(Main.class.getClassLoader().getResource("css/custom-styles.css")));
@@ -160,7 +163,11 @@ public class DashboardController {
                 String response = httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/getTeamName", json.toString());
                 json = new JSONObject(response);
             } catch (IOException e) {
-                e.printStackTrace();
+                // added
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                e.printStackTrace(pw);
+                logger.log("WARN", sw.toString());
             }
             ftpManager = new FTPManager(FTPManager.FTP_SERVER_ADDRESS, 21, json.get("teamName").toString(), "");
 
@@ -170,7 +177,11 @@ public class DashboardController {
                 String response = httpRequestManager.sendJSONRequest(HTTPRequestManager.SERVER_LOCATION + "/sendInvite", json.toString());
                 json = new JSONObject(response);
             } catch (IOException e) {
-                e.printStackTrace();
+                // added
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                e.printStackTrace(pw);
+                logger.log("WARN", sw.toString());
             }
             final String teamCode = json.get("teamCode").toString();
             currentUser.setTeamCode(teamCode);
@@ -179,7 +190,11 @@ public class DashboardController {
                 try {
                     MQTTManager.subscribe("teams/" + teamCode + "/changes/sync");
                 } catch (MqttException e) {
-                    e.printStackTrace();
+                    // added
+                    StringWriter sw = new StringWriter();
+                    PrintWriter pw = new PrintWriter(sw);
+                    e.printStackTrace(pw);
+                    logger.log("WARN", sw.toString());
                 }
             });
             mqttThread.start();
@@ -208,7 +223,11 @@ public class DashboardController {
                             return;
                         }
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        // added
+                        StringWriter sw = new StringWriter();
+                        PrintWriter pw = new PrintWriter(sw);
+                        e.printStackTrace(pw);
+                        logger.log("WARN", sw.toString());
                     }
                 } else if (ButtonType.CANCEL.equals(alertResult.get())) {
                     return;
@@ -234,7 +253,11 @@ public class DashboardController {
                     stage.show();
                 }
                 catch (IOException e) {
-                    e.printStackTrace();
+                    // added
+                    StringWriter sw = new StringWriter();
+                    PrintWriter pw = new PrintWriter(sw);
+                    e.printStackTrace(pw);
+                    logger.log("WARN", sw.toString());
                 }
             });
             myTeamMenu.getItems().add(chatMenuItem);
@@ -267,7 +290,11 @@ public class DashboardController {
                         }
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    // added
+                    StringWriter sw = new StringWriter();
+                    PrintWriter pw = new PrintWriter(sw);
+                    e.printStackTrace(pw);
+                    logger.log("WARN", sw.toString());
                 }
 
                 ChoiceDialog<String> dialog = new ChoiceDialog<>(choices.get(0), choices);
@@ -302,7 +329,11 @@ public class DashboardController {
                         fetchUserDetails();
                         Main.openDashboardStage(token, "Java");
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        // added
+                        StringWriter sw = new StringWriter();
+                        PrintWriter pw = new PrintWriter(sw);
+                        e.printStackTrace(pw);
+                        logger.log("WARN", sw.toString());
                     }
                 }
             });
@@ -326,7 +357,11 @@ public class DashboardController {
                         }
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    // added
+                    StringWriter sw = new StringWriter();
+                    PrintWriter pw = new PrintWriter(sw);
+                    e.printStackTrace(pw);
+                    logger.log("WARN", sw.toString());
                 }
 
                 ChoiceDialog<String> dialog = new ChoiceDialog<>(choices.get(0), choices);
@@ -361,7 +396,11 @@ public class DashboardController {
                         fetchUserDetails();
                         Main.openDashboardStage(token, mode);
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        // added
+                        StringWriter sw = new StringWriter();
+                        PrintWriter pw = new PrintWriter(sw);
+                        e.printStackTrace(pw);
+                        logger.log("WARN", sw.toString());
                     }
                 }
             });
@@ -390,7 +429,11 @@ public class DashboardController {
             try {
                 Main.openLoginStage();
             } catch (IOException e) {
-                e.printStackTrace();
+                // added
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                e.printStackTrace(pw);
+                logger.log("WARN", sw.toString());
             }
         });
 
@@ -417,7 +460,11 @@ public class DashboardController {
                                 lock.unlock();
                             }
                         } catch (MqttException e) {
-                            e.printStackTrace();
+                            // added
+                            StringWriter sw = new StringWriter();
+                            PrintWriter pw = new PrintWriter(sw);
+                            e.printStackTrace(pw);
+                            logger.log("WARN", sw.toString());
                         }
 
                     }
@@ -627,13 +674,21 @@ public class DashboardController {
                         throw sc.ioException();
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    // added
+                    StringWriter sw = new StringWriter();
+                    PrintWriter pw = new PrintWriter(sw);
+                    e.printStackTrace(pw);
+                    logger.log("WARN", sw.toString());
                 } finally {
                     if (inputStream != null) {
                         try {
                             inputStream.close();
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            // added
+                            StringWriter sw = new StringWriter();
+                            PrintWriter pw = new PrintWriter(sw);
+                            e.printStackTrace(pw);
+                            logger.log("WARN", sw.toString());
                         }
                     }
                     if (sc != null) {
@@ -710,14 +765,17 @@ public class DashboardController {
             Optional<String> result = textInputDialog.showAndWait();
             TextField input = textInputDialog.getEditor();
             if (input.getText() != null || input.getText().length() == 0) {
-
                 String tempFolder = System.getProperty("java.io.tmpdir");
                 Path tempFolderPath = Paths.get(tempFolder + "\\.collabmode");
                 File newItem = new File(tempFolderPath.toString() + "\\" + input.getText() + ".tmp");
                 try {
                     newItem.createNewFile();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    // added
+                    StringWriter sw = new StringWriter();
+                    PrintWriter pw = new PrintWriter(sw);
+                    e.printStackTrace(pw);
+                    logger.log("WARN", sw.toString());
                 }
                 String path = getPathOfItem();
                 String itemToBeUploaded = newItem.getAbsolutePath();
@@ -759,7 +817,11 @@ public class DashboardController {
                         fetchUserDetails();
                         Main.openDashboardStage(token, "Java");
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        // added
+                        StringWriter sw = new StringWriter();
+                        PrintWriter pw = new PrintWriter(sw);
+                        e.printStackTrace(pw);
+                        logger.log("WARN", sw.toString());
                     }
                 }
             }
@@ -787,7 +849,11 @@ public class DashboardController {
                 }
                 input.setText(json.get("teamCode").toString());
             } catch (IOException e) {
-                e.printStackTrace();
+                // added
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                e.printStackTrace(pw);
+                logger.log("WARN", sw.toString());
             }
             Optional<String> result = textInputDialog.showAndWait();
 
@@ -818,7 +884,11 @@ public class DashboardController {
                     fetchUserDetails();
                     Main.openDashboardStage(token, "Java");
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    // added
+                    StringWriter sw = new StringWriter();
+                    PrintWriter pw = new PrintWriter(sw);
+                    e.printStackTrace(pw);
+                    logger.log("WARN", sw.toString());
                 }
             }
         });
@@ -888,7 +958,11 @@ public class DashboardController {
                     Main.openLoginStage();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                // added
+                StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw);
+                e.printStackTrace(pw);
+                logger.log("WARN", sw.toString());
             }
         }));
         timeline.play();
@@ -910,7 +984,11 @@ public class DashboardController {
                                     writer.print(codeArea.getText());
                                     writer.close();
                                 } catch (FileNotFoundException | UnsupportedEncodingException e) {
-                                    e.printStackTrace();
+                                    // added
+                                    StringWriter sw = new StringWriter();
+                                    PrintWriter pw = new PrintWriter(sw);
+                                    e.printStackTrace(pw);
+                                    logger.log("WARN", sw.toString());
                                 }
                                 ftpManager.deleteFile(currentFileLocationOnFTP);
                                 ftpManager.uploadFile(currentFile.getAbsolutePath(), currentFileLocationOnFTP.substring(0, currentFileLocationOnFTP.lastIndexOf('/')));
@@ -1113,7 +1191,11 @@ public class DashboardController {
                         writer.print(codeArea.getText());
                         writer.close();
                     } catch (FileNotFoundException | UnsupportedEncodingException e) {
-                        e.printStackTrace();
+                        // added
+                        StringWriter sw = new StringWriter();
+                        PrintWriter pw = new PrintWriter(sw);
+                        e.printStackTrace(pw);
+                        logger.log("WARN", sw.toString());
                     }
 
                     ftpManager.deleteFile(currentFileLocationOnFTP);
@@ -1153,7 +1235,11 @@ public class DashboardController {
                         throw sc.ioException();
                     }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    // added
+                    StringWriter sw = new StringWriter();
+                    PrintWriter pw = new PrintWriter(sw);
+                    e.printStackTrace(pw);
+                    logger.log("WARN", sw.toString());
                 } finally {
                     if (inputStream != null) {
                         try {
@@ -1161,7 +1247,11 @@ public class DashboardController {
                             if (downloadedFile.exists())
                                 downloadedFile.delete();
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            // added
+                            StringWriter sw = new StringWriter();
+                            PrintWriter pw = new PrintWriter(sw);
+                            e.printStackTrace(pw);
+                            logger.log("WARN", sw.toString());
                         }
                     }
                     if (sc != null) {
